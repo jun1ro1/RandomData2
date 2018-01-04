@@ -14,6 +14,19 @@
 		F9AA9FA41FFE26FE0072E4A0 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = F9AA9FA21FFE26FE0072E4A0 /* LaunchScreen.storyboard */; };
 		F9AA9FAF1FFE26FE0072E4A0 /* RandomData2Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9AA9FAE1FFE26FE0072E4A0 /* RandomData2Tests.swift */; };
 		F9AA9FBA1FFE26FE0072E4A0 /* RandomData2UITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9AA9FB91FFE26FE0072E4A0 /* RandomData2UITests.swift */; };
+		F9AA9FC91FFE274A0072E4A0 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F9AA9FC81FFE274A0072E4A0 /* Security.framework */; };
+		F9AA9FCC1FFE29280072E4A0 /* AsBytes.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9AA9FCB1FFE29280072E4A0 /* AsBytes.swift */; };
+		F9AA9FCD1FFE29280072E4A0 /* AsBytes.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9AA9FCB1FFE29280072E4A0 /* AsBytes.swift */; };
+		F9AA9FCE1FFE29280072E4A0 /* AsBytes.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9AA9FCB1FFE29280072E4A0 /* AsBytes.swift */; };
+		F9AA9FD01FFE29610072E4A0 /* J1Cryptor.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9AA9FCF1FFE29610072E4A0 /* J1Cryptor.swift */; };
+		F9AA9FD11FFE29610072E4A0 /* J1Cryptor.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9AA9FCF1FFE29610072E4A0 /* J1Cryptor.swift */; };
+		F9AA9FD21FFE29610072E4A0 /* J1Cryptor.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9AA9FCF1FFE29610072E4A0 /* J1Cryptor.swift */; };
+		F9AA9FD41FFE296B0072E4A0 /* J1CryptorCore.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9AA9FD31FFE296B0072E4A0 /* J1CryptorCore.swift */; };
+		F9AA9FD51FFE296B0072E4A0 /* J1CryptorCore.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9AA9FD31FFE296B0072E4A0 /* J1CryptorCore.swift */; };
+		F9AA9FD61FFE296B0072E4A0 /* J1CryptorCore.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9AA9FD31FFE296B0072E4A0 /* J1CryptorCore.swift */; };
+		F9AA9FD81FFE29780072E4A0 /* RandomData.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9AA9FD71FFE29780072E4A0 /* RandomData.swift */; };
+		F9AA9FD91FFE29780072E4A0 /* RandomData.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9AA9FD71FFE29780072E4A0 /* RandomData.swift */; };
+		F9AA9FDA1FFE29780072E4A0 /* RandomData.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9AA9FD71FFE29780072E4A0 /* RandomData.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -47,6 +60,12 @@
 		F9AA9FB51FFE26FE0072E4A0 /* RandomData2UITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = RandomData2UITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		F9AA9FB91FFE26FE0072E4A0 /* RandomData2UITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RandomData2UITests.swift; sourceTree = "<group>"; };
 		F9AA9FBB1FFE26FE0072E4A0 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		F9AA9FC81FFE274A0072E4A0 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
+		F9AA9FCA1FFE27B60072E4A0 /* RandomData2-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "RandomData2-Bridging-Header.h"; sourceTree = "<group>"; };
+		F9AA9FCB1FFE29280072E4A0 /* AsBytes.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AsBytes.swift; sourceTree = "<group>"; };
+		F9AA9FCF1FFE29610072E4A0 /* J1Cryptor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = J1Cryptor.swift; sourceTree = "<group>"; };
+		F9AA9FD31FFE296B0072E4A0 /* J1CryptorCore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = J1CryptorCore.swift; sourceTree = "<group>"; };
+		F9AA9FD71FFE29780072E4A0 /* RandomData.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RandomData.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -54,6 +73,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F9AA9FC91FFE274A0072E4A0 /* Security.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -81,6 +101,7 @@
 				F9AA9FAD1FFE26FE0072E4A0 /* RandomData2Tests */,
 				F9AA9FB81FFE26FE0072E4A0 /* RandomData2UITests */,
 				F9AA9F971FFE26FE0072E4A0 /* Products */,
+				F9AA9FC71FFE274A0072E4A0 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -103,6 +124,11 @@
 				F9AA9FA01FFE26FE0072E4A0 /* Assets.xcassets */,
 				F9AA9FA21FFE26FE0072E4A0 /* LaunchScreen.storyboard */,
 				F9AA9FA51FFE26FE0072E4A0 /* Info.plist */,
+				F9AA9FCA1FFE27B60072E4A0 /* RandomData2-Bridging-Header.h */,
+				F9AA9FCB1FFE29280072E4A0 /* AsBytes.swift */,
+				F9AA9FCF1FFE29610072E4A0 /* J1Cryptor.swift */,
+				F9AA9FD31FFE296B0072E4A0 /* J1CryptorCore.swift */,
+				F9AA9FD71FFE29780072E4A0 /* RandomData.swift */,
 			);
 			path = RandomData2;
 			sourceTree = "<group>";
@@ -123,6 +149,14 @@
 				F9AA9FBB1FFE26FE0072E4A0 /* Info.plist */,
 			);
 			path = RandomData2UITests;
+			sourceTree = "<group>";
+		};
+		F9AA9FC71FFE274A0072E4A0 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				F9AA9FC81FFE274A0072E4A0 /* Security.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -259,7 +293,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F9AA9FD81FFE29780072E4A0 /* RandomData.swift in Sources */,
+				F9AA9FD01FFE29610072E4A0 /* J1Cryptor.swift in Sources */,
 				F9AA9F9C1FFE26FE0072E4A0 /* ViewController.swift in Sources */,
+				F9AA9FD41FFE296B0072E4A0 /* J1CryptorCore.swift in Sources */,
+				F9AA9FCC1FFE29280072E4A0 /* AsBytes.swift in Sources */,
 				F9AA9F9A1FFE26FE0072E4A0 /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -268,7 +306,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F9AA9FD11FFE29610072E4A0 /* J1Cryptor.swift in Sources */,
+				F9AA9FD51FFE296B0072E4A0 /* J1CryptorCore.swift in Sources */,
 				F9AA9FAF1FFE26FE0072E4A0 /* RandomData2Tests.swift in Sources */,
+				F9AA9FCD1FFE29280072E4A0 /* AsBytes.swift in Sources */,
+				F9AA9FD91FFE29780072E4A0 /* RandomData.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -276,7 +318,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F9AA9FD21FFE29610072E4A0 /* J1Cryptor.swift in Sources */,
+				F9AA9FD61FFE296B0072E4A0 /* J1CryptorCore.swift in Sources */,
 				F9AA9FBA1FFE26FE0072E4A0 /* RandomData2UITests.swift in Sources */,
+				F9AA9FCE1FFE29280072E4A0 /* AsBytes.swift in Sources */,
+				F9AA9FDA1FFE29780072E4A0 /* RandomData.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -368,6 +414,7 @@
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OBJC_BRIDGING_HEADER = "RandomData2/RandomData2-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
 			name = Debug;
@@ -417,6 +464,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 11.2;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = iphoneos;
+				SWIFT_OBJC_BRIDGING_HEADER = "RandomData2/RandomData2-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
 				VALIDATE_PRODUCT = YES;
 			};

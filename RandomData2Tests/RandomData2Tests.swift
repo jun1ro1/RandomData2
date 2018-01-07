@@ -148,7 +148,7 @@ https://ja.wikipedia.org/wiki/歓喜の歌
         1019, 1021
     ]
     var counts: [Int] = []
-    let counts_error: [Int] = [0, -1, J1RandomData.COUNT_MAX + 1, Int.min, Int.max]
+    let counts_error: [Int] = [0, -1, RandomData.COUNT_MAX + 1, Int.min, Int.max]
     let cypherCharSet: [CypherCharacterSet] =
         CypherCharacterSet.StandardCharacterSet + [.AllCharactersSet]
 
@@ -206,14 +206,14 @@ https://ja.wikipedia.org/wiki/歓喜の歌
         print()
     }
 
-    func testJ1RandomDataGet_distribution() {
-        print("J1RandomData.shared.get -> String Distribution Test")
+    func testRandomDataGet_distribution() {
+        print("RandomData.shared.get -> String Distribution Test")
         for s in cypherCharSet {
             print("Cypher Charcter Set in \(s.string)")
             var counts: [Character: Int] = Dictionary(uniqueKeysWithValues: s.string.map { ($0, 0) })
             let c = counts.count * 10
             var r = ""
-            XCTAssertNoThrow(r = try J1RandomData.shared.get(count: c, in: s))
+            XCTAssertNoThrow(r = try RandomData.shared.get(count: c, in: s))
             r.forEach { counts[$0]! += 1 }
             var count = 1
             counts.keys.sorted().forEach {
@@ -231,48 +231,48 @@ https://ja.wikipedia.org/wiki/歓喜の歌
         }
     }
 
-    func testJ1RandomDataGet() {
+    func testRandomDataGet() {
         // This is an example of a functional test case.
         // Use XCTAssert and related functions to verify your tests produce the correct results.
 
-        print("J1RandomData.shared.get -> Data")
+        print("RandomData.shared.get -> Data")
         for c in counts {
             print(c, " ", separator: "", terminator: "")
             var r = Data()
-            XCTAssertNoThrow(r = try J1RandomData.shared.get(count: c))
+            XCTAssertNoThrow(r = try RandomData.shared.get(count: c))
             XCTAssertEqual(r.count, c, "length error r.count=\(r.count) c=\(c)")
         }
         print()
 
-        print("J1RandomData.shared.get -> String")
+        print("RandomData.shared.get -> String")
         for c in counts {
             print(c, " ", separator: "", terminator: "")
             for s in cypherCharSet {
                 var r = ""
-                XCTAssertNoThrow(r = try J1RandomData.shared.get(count: c, in: s))
+                XCTAssertNoThrow(r = try RandomData.shared.get(count: c, in: s))
                 XCTAssertEqual(r.count, c, "length error r.count=\(r.count) c=\(c)")
             }
         }
         print()
     }
 
-    func testJ1RandomDataGet_error() {
-        print("J1RandomData.shared.get -> Data")
+    func testRandomDataGet_error() {
+        print("RandomData.shared.get -> Data")
         for c in counts_error {
-            XCTAssertThrowsError(_ = try J1RandomData.shared.get(count: c)) {
+            XCTAssertThrowsError(_ = try RandomData.shared.get(count: c)) {
                 error in
                 print("error='\(error.localizedDescription)' count=\(c)")
-                XCTAssertEqual(error as! J1RandomDataError, J1RandomDataError.outOfRange)
+                XCTAssertEqual(error as! RandomDataError, RandomDataError.outOfRange)
             }
         }
 
-        print("J1RandomData.shared.get -> String")
+        print("RandomData.shared.get -> String")
         for c in counts_error {
             for s in cypherCharSet {
-                XCTAssertThrowsError(_ = try J1RandomData.shared.get(count: c, in: s)) {
+                XCTAssertThrowsError(_ = try RandomData.shared.get(count: c, in: s)) {
                     error in
                     print("error='\(error.localizedDescription)' count=\(c) in=\(s.description)")
-                    XCTAssertEqual(error as! J1RandomDataError, J1RandomDataError.outOfRange)
+                    XCTAssertEqual(error as! RandomDataError, RandomDataError.outOfRange)
                 }
             }
         }

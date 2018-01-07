@@ -1,6 +1,6 @@
 
 //
-//  J1CryptorCore.swift
+//  CryptorCore.swift
 //  RandomData
 //
 //  Created by OKU Junichirou on 2017/11/04.
@@ -132,7 +132,7 @@ fileprivate class Validator {
     var strEncryptedMark: String? = nil
 
     init?(key: CryptorKeyType) {
-        guard var binMark: CryptorKeyType = try? J1RandomData.shared.get(count: 16) else {
+        guard var binMark: CryptorKeyType = try? RandomData.shared.get(count: 16) else {
             return nil
         }
         defer { binMark.reset() }
@@ -271,14 +271,14 @@ class CryptorCore {
         defer { binPASS.reset() }
 
         // create SALT
-        var binSALT: CryptorKeyType = try J1RandomData.shared.get(count: 16)
+        var binSALT: CryptorKeyType = try RandomData.shared.get(count: 16)
         defer { binSALT.reset() }
 
         // derivate a KEK with the password and the SALT
         let binKEK = try self.getKEK(password: password, salt: binSALT)
 
         // create a CEK
-        var binCEK: CryptorKeyType = try J1RandomData.shared.get(count: Int(kCCKeySizeAES256))
+        var binCEK: CryptorKeyType = try RandomData.shared.get(count: Int(kCCKeySizeAES256))
         defer { binCEK.reset() }
 
         // encrypt the CEK with the KEK
@@ -330,7 +330,7 @@ class CryptorCore {
             throw CryptorError.wrongPassword
         }
 
-        var binSEK: CryptorKeyType = try J1RandomData.shared.get(count: kCCKeySizeAES256)
+        var binSEK: CryptorKeyType = try RandomData.shared.get(count: kCCKeySizeAES256)
         defer { binSEK.reset() }
 
         var binKEKEncryptedWithSEK: CryptorKeyType = try binKEK.encrypt(with: binSEK)

@@ -205,14 +205,14 @@ struct CypherCharacterSet: OptionSet, Hashable {
 
 // MARK: - Errors
 
-enum J1RandomDataError: Error {
+enum RandomDataError: Error {
     case outOfRange
     case unexpected
     case OSError(error: OSStatus)
 }
 
 // https://stackoverflow.com/questions/39176196/how-to-provide-a-localized-description-with-an-error-type-in-swift
-extension J1RandomDataError: LocalizedError {
+extension RandomDataError: LocalizedError {
     public var errorDescription: String?  {
         switch self {
         case .outOfRange:
@@ -226,8 +226,8 @@ extension J1RandomDataError: LocalizedError {
 }
 
 // https://stackoverflow.com/questions/39972512/cannot-invoke-xctassertequal-with-an-argument-list-errortype-xmpperror
-extension J1RandomDataError: Equatable {
-    static func == (lhs: J1RandomDataError, rhs: J1RandomDataError) -> Bool {
+extension RandomDataError: Equatable {
+    static func == (lhs: RandomDataError, rhs: RandomDataError) -> Bool {
         switch (lhs, rhs) {
         case (.outOfRange, .outOfRange):
             return true
@@ -241,14 +241,14 @@ extension J1RandomDataError: Equatable {
     }
 }
 
-// MARK: - J1RandomData
+// MARK: - RandomData
 /**
 
  Generate Random Data and String
 
  */
-class J1RandomData {
-    static let shared    = J1RandomData()
+class RandomData {
+    static let shared    = RandomData()
     static let COUNT_MAX = 1024
 
     /**
@@ -261,8 +261,8 @@ class J1RandomData {
 
      */
     func get(count: Int) throws -> Data {
-        guard case 1...J1RandomData.COUNT_MAX = count else {
-            throw J1RandomDataError.outOfRange
+        guard case 1...RandomData.COUNT_MAX = count else {
+            throw RandomDataError.outOfRange
         }
         
         // http://blog.sarabande.jp/post/92199466318
@@ -275,14 +275,14 @@ class J1RandomData {
             error = SecRandomCopyBytes(kSecRandomDefault, count, bytes)
         }
         guard error == errSecSuccess else {
-            throw J1RandomDataError.OSError(error: error)
+            throw RandomDataError.OSError(error: error)
         }
         return data
     }
     
     func get(count: Int, in charSet: CypherCharacterSet ) throws -> String {
-        guard case 1...J1RandomData.COUNT_MAX = count else {
-            throw J1RandomDataError.outOfRange
+        guard case 1...RandomData.COUNT_MAX = count else {
+            throw RandomDataError.outOfRange
         }
         
         var charArray: [Character] = charSet.string.map { $0 }
@@ -300,8 +300,8 @@ class J1RandomData {
         var string = ""
         string.reserveCapacity(count)
         while string.count < count {
-            let indexCount = min(indexTotalCount, J1RandomData.COUNT_MAX)
-            // J1RandomData.get generates count bytes random data
+            let indexCount = min(indexTotalCount, RandomData.COUNT_MAX)
+            // RandomData.get generates count bytes random data
             // calculate the enough size of random data
 
             let rand = try self.get(count: indexCount)
@@ -312,7 +312,7 @@ class J1RandomData {
             let str = String( indecies.map { charArray[Int($0)] } )
             guard str.count > 0 else {
                 assertionFailure()
-                throw J1RandomDataError.unexpected
+                throw RandomDataError.unexpected
             }
             string  += str
         }

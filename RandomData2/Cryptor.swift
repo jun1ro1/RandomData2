@@ -1,5 +1,5 @@
 //
-//  J1Cryptor.swift
+//  Cryptor.swift
 //  RandomData
 //
 //  Created by OKU Junichirou on 2017/11/05.

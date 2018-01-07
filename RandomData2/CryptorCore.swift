@@ -11,7 +11,7 @@ import Foundation
 
 typealias CryptorKeyType = Data
 
-enum J1CryptorError: Error {
+enum CryptorError: Error {
     case unexpected
     case outOfRange
     case invalidCharacter
@@ -52,7 +52,7 @@ fileprivate extension Data {
             return cipher
         }
         else {
-            throw J1CryptorError.cccryptError(error: status)
+            throw CryptorError.cccryptError(error: status)
         }
     }
 
@@ -83,7 +83,7 @@ fileprivate extension Data {
             return plain
         }
         else {
-            throw J1CryptorError.cccryptError(error: status)
+            throw CryptorError.cccryptError(error: status)
         }
     }
 
@@ -106,21 +106,21 @@ fileprivate extension Data {
 fileprivate extension String {
     func decrypt(with key: CryptorKeyType) throws -> CryptorKeyType {
         guard let data = CryptorKeyType(base64Encoded: self, options: .ignoreUnknownCharacters) else {
-            throw J1CryptorError.invalidCharacter
+            throw CryptorError.invalidCharacter
         }
         return try data.decrypt(with: key)
     }
 
     func encrypt(with key: CryptorKeyType) throws -> String {
         guard let data = self.data(using: .utf8, allowLossyConversion: false) else {
-            throw J1CryptorError.invalidCharacter
+            throw CryptorError.invalidCharacter
         }
         return try data.encrypt(with: key).base64EncodedString()
     }
 
     func decrypt(with key: CryptorKeyType) throws -> String {
         guard var data = Data(base64Encoded: self, options: []) else {
-            throw J1CryptorError.invalidCharacter
+            throw CryptorError.invalidCharacter
         }
         defer { data.reset() }
         return String(data: try data.decrypt(with: key), encoding: .utf8)!
@@ -187,7 +187,7 @@ fileprivate class Validator {
 } // Validator
 
 
-class J1CryptorCore {
+class CryptorCore {
     // constants
     static let MaxPasswordLength = 1000
 
@@ -199,10 +199,10 @@ class J1CryptorCore {
 
     // instance variables
     struct Session {
-        var cryptor: J1Cryptor
+        var cryptor: Cryptor
         var binITK:  CryptorKeyType  // Inter key: the KEK(Key kncryption Key) encrypted with SEK(Session Key)
 
-        init(cryptor: J1Cryptor, key: CryptorKeyType) {
+        init(cryptor: Cryptor, key: CryptorKeyType) {
             self.cryptor = cryptor
             self.binITK  = key
         }
@@ -210,7 +210,7 @@ class J1CryptorCore {
     var sessions: [Int: Session]
     fileprivate var validator: Validator?
 
-    static var shared = J1CryptorCore()
+    static var shared = CryptorCore()
 
     init() {
         self.strSALT = ""
@@ -223,13 +223,13 @@ class J1CryptorCore {
     // MARK: - methods
     private func getKEK(password: String, salt: CryptorKeyType) throws -> CryptorKeyType {
         // check password
-        guard case 1...J1CryptorCore.MaxPasswordLength = password.count else {
-            throw J1CryptorError.outOfRange
+        guard case 1...CryptorCore.MaxPasswordLength = password.count else {
+            throw CryptorError.outOfRange
         }
 
         // convert the password to a Data
         guard var binPASS: CryptorKeyType = password.data(using: .utf8, allowLossyConversion: true) else {
-            throw J1CryptorError.invalidCharacter
+            throw CryptorError.invalidCharacter
         }
         defer { binPASS.reset() }
 
@@ -258,7 +258,7 @@ class J1CryptorCore {
             print(String(reflecting: type(of: self)), "\(#function) binKEK   =", binKEK as NSData)
         #endif
         guard status == CCCryptorStatus(kCCSuccess) else {
-            throw J1CryptorError.cccryptError(error: status)
+            throw CryptorError.cccryptError(error: status)
         }
         return binKEK
     }
@@ -266,7 +266,7 @@ class J1CryptorCore {
     func create(password: String) throws {
         // convert the password to a Data
         guard var binPASS: CryptorKeyType = password.data(using: .utf8, allowLossyConversion: true) else {
-            throw J1CryptorError.invalidCharacter
+            throw CryptorError.invalidCharacter
         }
         defer { binPASS.reset() }
 
@@ -300,12 +300,12 @@ class J1CryptorCore {
         #endif
     }
 
-    func open(password: String, cryptor: J1Cryptor) throws -> CryptorKeyType {
+    func open(password: String, cryptor: Cryptor) throws -> CryptorKeyType {
         var status: CCCryptorStatus = CCCryptorStatus(kCCSuccess)
 
         // get SALT
         guard var binSALT = CryptorKeyType(base64Encoded: self.strSALT, options: .ignoreUnknownCharacters) else {
-            throw J1CryptorError.unexpected
+            throw CryptorError.unexpected
         }
         defer { binSALT.reset() }
 
@@ -327,7 +327,7 @@ class J1CryptorCore {
             #if DEBUG
                 print(String(reflecting: type(of: self)), "\(#function) validate= false")
             #endif
-            throw J1CryptorError.wrongPassword
+            throw CryptorError.wrongPassword
         }
 
         var binSEK: CryptorKeyType = try J1RandomData.shared.get(count: kCCKeySizeAES256)
@@ -341,9 +341,9 @@ class J1CryptorCore {
     }
 
 
-    func close(cryptor: J1Cryptor) throws {
+    func close(cryptor: Cryptor) throws {
         guard self.sessions.removeValue(forKey: ObjectIdentifier(cryptor).hashValue) != nil else {
-            throw J1CryptorError.notOpened
+            throw CryptorError.notOpened
         }
     }
 
@@ -355,7 +355,7 @@ class J1CryptorCore {
     func change(password oldpass: String, to newpass: String) throws {
         // get SALT
         guard var binSALT = CryptorKeyType(base64Encoded: self.strSALT, options: .ignoreUnknownCharacters) else {
-            throw J1CryptorError.invalidCharacter
+            throw CryptorError.invalidCharacter
         }
         defer { binSALT.reset() }
 
@@ -377,7 +377,7 @@ class J1CryptorCore {
             #if DEBUG
                 print(String(reflecting: type(of: self)), "\(#function) validate= false")
             #endif
-            throw J1CryptorError.wrongPassword
+            throw CryptorError.wrongPassword
         }
 
         // change KEK
@@ -398,9 +398,9 @@ class J1CryptorCore {
         #endif
     }
 
-    func encrypt(cryptor: J1Cryptor, plain: Data) throws -> Data {
+    func encrypt(cryptor: Cryptor, plain: Data) throws -> Data {
         guard let sek = cryptor.key else {
-            throw J1CryptorError.notOpened
+            throw CryptorError.notOpened
         }
         var kek: CryptorKeyType =
             (try self.sessions[ObjectIdentifier(cryptor).hashValue]?.binITK.decrypt(with: sek))!
@@ -412,9 +412,9 @@ class J1CryptorCore {
         return try plain.encrypt(with: cek)
     }
 
-    func decrypt(cryptor: J1Cryptor, cipher: Data) throws -> Data {
+    func decrypt(cryptor: Cryptor, cipher: Data) throws -> Data {
         guard let sek = cryptor.key else {
-            throw J1CryptorError.notOpened
+            throw CryptorError.notOpened
         }
         var kek: CryptorKeyType =
             (try self.sessions[ObjectIdentifier(cryptor).hashValue]?.binITK.decrypt(with: sek))!
@@ -426,9 +426,9 @@ class J1CryptorCore {
         return try cipher.decrypt(with: cek)
     }
 
-    func encrypt(cryptor: J1Cryptor, plain: String) throws -> String {
+    func encrypt(cryptor: Cryptor, plain: String) throws -> String {
         guard let sek = cryptor.key else {
-            throw J1CryptorError.notOpened
+            throw CryptorError.notOpened
         }
         var kek: CryptorKeyType =
             (try self.sessions[ObjectIdentifier(cryptor).hashValue]?.binITK.decrypt(with: sek))!
@@ -440,9 +440,9 @@ class J1CryptorCore {
         return try plain.encrypt(with: cek)
     }
 
-    func decrypt(cryptor: J1Cryptor, cipher: String) throws -> String {
+    func decrypt(cryptor: Cryptor, cipher: String) throws -> String {
         guard let sek = cryptor.key else {
-            throw J1CryptorError.notOpened
+            throw CryptorError.notOpened
         }
         var kek: CryptorKeyType =
             (try self.sessions[ObjectIdentifier(cryptor).hashValue]?.binITK.decrypt(with: sek))!

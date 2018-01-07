@@ -8,8 +8,8 @@
 
 import Foundation
 
-class J1Cryptor {
-    static var core: J1CryptorCore = J1CryptorCore.shared
+class Cryptor {
+    static var core: CryptorCore = CryptorCore.shared
     var key: CryptorKeyType?
     
     init() {
@@ -17,11 +17,11 @@ class J1Cryptor {
     }
     
     func open(password: String) throws {
-        self.key = try J1Cryptor.core.open(password: password, cryptor: self)
+        self.key = try Cryptor.core.open(password: password, cryptor: self)
     }
     
     func close() throws {
-        try J1Cryptor.core.close(cryptor: self)
+        try Cryptor.core.close(cryptor: self)
         self.key = nil
     }
     
@@ -35,36 +35,36 @@ class J1Cryptor {
 
     func change(password oldpass: String, to newpass: String) throws {
         guard self.key == nil else {
-            throw J1CryptorError.opened
+            throw CryptorError.opened
         }
-        return try J1Cryptor.core.change(password: oldpass, to: newpass)
+        return try Cryptor.core.change(password: oldpass, to: newpass)
     }
 
     func encrypt(plain: Data) throws -> Data {
         guard self.key != nil else {
-            throw J1CryptorError.opened
+            throw CryptorError.opened
         }
-        return try J1Cryptor.core.encrypt(cryptor: self, plain: plain)
+        return try Cryptor.core.encrypt(cryptor: self, plain: plain)
     }
 
     func decrypt(cipher: Data) throws -> Data {
         guard self.key != nil else {
-            throw J1CryptorError.opened
+            throw CryptorError.opened
         }
-        return try J1Cryptor.core.decrypt(cryptor: self, cipher: cipher)
+        return try Cryptor.core.decrypt(cryptor: self, cipher: cipher)
     }
 
     func encrypt(plain: String) throws -> String {
         guard self.key != nil else {
-            throw J1CryptorError.opened
+            throw CryptorError.opened
         }
-        return try J1Cryptor.core.encrypt(cryptor: self, plain: plain)
+        return try Cryptor.core.encrypt(cryptor: self, plain: plain)
     }
 
     func decrypt(cipher: String) throws -> String {
         guard self.key != nil else {
-            throw J1CryptorError.opened
+            throw CryptorError.opened
         }
-        return try J1Cryptor.core.decrypt(cryptor: self, cipher: cipher)
+        return try Cryptor.core.decrypt(cryptor: self, cipher: cipher)
     }
 }

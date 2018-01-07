@@ -18,12 +18,12 @@
 		F9AA9FCC1FFE29280072E4A0 /* AsBytes.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9AA9FCB1FFE29280072E4A0 /* AsBytes.swift */; };
 		F9AA9FCD1FFE29280072E4A0 /* AsBytes.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9AA9FCB1FFE29280072E4A0 /* AsBytes.swift */; };
 		F9AA9FCE1FFE29280072E4A0 /* AsBytes.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9AA9FCB1FFE29280072E4A0 /* AsBytes.swift */; };
-		F9AA9FD01FFE29610072E4A0 /* J1Cryptor.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9AA9FCF1FFE29610072E4A0 /* J1Cryptor.swift */; };
-		F9AA9FD11FFE29610072E4A0 /* J1Cryptor.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9AA9FCF1FFE29610072E4A0 /* J1Cryptor.swift */; };
-		F9AA9FD21FFE29610072E4A0 /* J1Cryptor.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9AA9FCF1FFE29610072E4A0 /* J1Cryptor.swift */; };
-		F9AA9FD41FFE296B0072E4A0 /* J1CryptorCore.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9AA9FD31FFE296B0072E4A0 /* J1CryptorCore.swift */; };
-		F9AA9FD51FFE296B0072E4A0 /* J1CryptorCore.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9AA9FD31FFE296B0072E4A0 /* J1CryptorCore.swift */; };
-		F9AA9FD61FFE296B0072E4A0 /* J1CryptorCore.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9AA9FD31FFE296B0072E4A0 /* J1CryptorCore.swift */; };
+		F9AA9FD01FFE29610072E4A0 /* Cryptor.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9AA9FCF1FFE29610072E4A0 /* Cryptor.swift */; };
+		F9AA9FD11FFE29610072E4A0 /* Cryptor.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9AA9FCF1FFE29610072E4A0 /* Cryptor.swift */; };
+		F9AA9FD21FFE29610072E4A0 /* Cryptor.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9AA9FCF1FFE29610072E4A0 /* Cryptor.swift */; };
+		F9AA9FD41FFE296B0072E4A0 /* CryptorCore.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9AA9FD31FFE296B0072E4A0 /* CryptorCore.swift */; };
+		F9AA9FD51FFE296B0072E4A0 /* CryptorCore.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9AA9FD31FFE296B0072E4A0 /* CryptorCore.swift */; };
+		F9AA9FD61FFE296B0072E4A0 /* CryptorCore.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9AA9FD31FFE296B0072E4A0 /* CryptorCore.swift */; };
 		F9AA9FD81FFE29780072E4A0 /* RandomData.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9AA9FD71FFE29780072E4A0 /* RandomData.swift */; };
 		F9AA9FD91FFE29780072E4A0 /* RandomData.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9AA9FD71FFE29780072E4A0 /* RandomData.swift */; };
 		F9AA9FDA1FFE29780072E4A0 /* RandomData.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9AA9FD71FFE29780072E4A0 /* RandomData.swift */; };
@@ -63,8 +63,8 @@
 		F9AA9FC81FFE274A0072E4A0 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
 		F9AA9FCA1FFE27B60072E4A0 /* RandomData2-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "RandomData2-Bridging-Header.h"; sourceTree = "<group>"; };
 		F9AA9FCB1FFE29280072E4A0 /* AsBytes.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AsBytes.swift; sourceTree = "<group>"; };
-		F9AA9FCF1FFE29610072E4A0 /* J1Cryptor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = J1Cryptor.swift; sourceTree = "<group>"; };
-		F9AA9FD31FFE296B0072E4A0 /* J1CryptorCore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = J1CryptorCore.swift; sourceTree = "<group>"; };
+		F9AA9FCF1FFE29610072E4A0 /* Cryptor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Cryptor.swift; sourceTree = "<group>"; };
+		F9AA9FD31FFE296B0072E4A0 /* CryptorCore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CryptorCore.swift; sourceTree = "<group>"; };
 		F9AA9FD71FFE29780072E4A0 /* RandomData.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RandomData.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -126,8 +126,8 @@
 				F9AA9FA51FFE26FE0072E4A0 /* Info.plist */,
 				F9AA9FCA1FFE27B60072E4A0 /* RandomData2-Bridging-Header.h */,
 				F9AA9FCB1FFE29280072E4A0 /* AsBytes.swift */,
-				F9AA9FCF1FFE29610072E4A0 /* J1Cryptor.swift */,
-				F9AA9FD31FFE296B0072E4A0 /* J1CryptorCore.swift */,
+				F9AA9FCF1FFE29610072E4A0 /* Cryptor.swift */,
+				F9AA9FD31FFE296B0072E4A0 /* CryptorCore.swift */,
 				F9AA9FD71FFE29780072E4A0 /* RandomData.swift */,
 			);
 			path = RandomData2;
@@ -294,9 +294,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				F9AA9FD81FFE29780072E4A0 /* RandomData.swift in Sources */,
-				F9AA9FD01FFE29610072E4A0 /* J1Cryptor.swift in Sources */,
+				F9AA9FD01FFE29610072E4A0 /* Cryptor.swift in Sources */,
 				F9AA9F9C1FFE26FE0072E4A0 /* ViewController.swift in Sources */,
-				F9AA9FD41FFE296B0072E4A0 /* J1CryptorCore.swift in Sources */,
+				F9AA9FD41FFE296B0072E4A0 /* CryptorCore.swift in Sources */,
 				F9AA9FCC1FFE29280072E4A0 /* AsBytes.swift in Sources */,
 				F9AA9F9A1FFE26FE0072E4A0 /* AppDelegate.swift in Sources */,
 			);
@@ -306,8 +306,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F9AA9FD11FFE29610072E4A0 /* J1Cryptor.swift in Sources */,
-				F9AA9FD51FFE296B0072E4A0 /* J1CryptorCore.swift in Sources */,
+				F9AA9FD11FFE29610072E4A0 /* Cryptor.swift in Sources */,
+				F9AA9FD51FFE296B0072E4A0 /* CryptorCore.swift in Sources */,
 				F9AA9FAF1FFE26FE0072E4A0 /* RandomData2Tests.swift in Sources */,
 				F9AA9FCD1FFE29280072E4A0 /* AsBytes.swift in Sources */,
 				F9AA9FD91FFE29780072E4A0 /* RandomData.swift in Sources */,
@@ -318,8 +318,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F9AA9FD21FFE29610072E4A0 /* J1Cryptor.swift in Sources */,
-				F9AA9FD61FFE296B0072E4A0 /* J1CryptorCore.swift in Sources */,
+				F9AA9FD21FFE29610072E4A0 /* Cryptor.swift in Sources */,
+				F9AA9FD61FFE296B0072E4A0 /* CryptorCore.swift in Sources */,
 				F9AA9FBA1FFE26FE0072E4A0 /* RandomData2UITests.swift in Sources */,
 				F9AA9FCE1FFE29280072E4A0 /* AsBytes.swift in Sources */,
 				F9AA9FDA1FFE29780072E4A0 /* RandomData.swift in Sources */,

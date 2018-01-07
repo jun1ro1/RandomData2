@@ -9,18 +9,18 @@
 import Foundation
 import Darwin
 
-// MARK: - CypherCharacterSet
-/**
+// MARK: - Structure
+/// A set of characters to get a randaom string.
+public struct CypherCharacterSet: OptionSet, Hashable {
+    // MARK: Properties
+    /// The corresponding value of the raw type.
+    public let rawValue:  UInt32
 
-Character Set in Randaom String
+    /// The hash value.
+    public var hashValue: Int     { return Int(self.rawValue) }
 
- */
-struct CypherCharacterSet: OptionSet, Hashable {
-    let rawValue: UInt32
-    init(rawValue: UInt32) { self.rawValue = rawValue }
-    var hashValue: Int     { return Int(self.rawValue) }
-    
-    static var iterator: AnyIterator<CypherCharacterSet> {
+    /// An iterator over the sets of characters.
+    public static var iterator: AnyIterator<CypherCharacterSet> {
         var value: CypherCharacterSet.RawValue = 1
         return AnyIterator {
             guard value != CypherCharacterSet.TypeEnd.rawValue else {
@@ -31,67 +31,94 @@ struct CypherCharacterSet: OptionSet, Hashable {
             return r
         }
     }
-    
-    func makeIterator() -> AnyIterator<CypherCharacterSet> {
-        var bit: UInt32 = 1
-        return AnyIterator {
-            while bit < CypherCharacterSet.TypeEnd.rawValue &&
-                !self.contains(CypherCharacterSet(rawValue: bit)) {
-                    bit <<= 1
+
+    /// Retuns a string representation.
+    public var string: String {
+        return CypherCharacterSet.iterator.flatMap {
+            self.contains($0) ? $0.tostr : nil
+            }.joined()
+    }
+
+    /// Retuns a description.
+    public var description: String {
+        var val = self
+        var strArray: [String] = []
+
+        // 1st: standard character set
+        let standardSets = [
+            CypherCharacterSet.DecimalDigits: "0-9",
+            CypherCharacterSet.UppercaseLatinAlphabets: "A-Z",
+            CypherCharacterSet.LowercaseLatinAlphabets: "a-z",
+            CypherCharacterSet.UpperCaseLettersSet: "0-9A-Z",
+            CypherCharacterSet.LowerCaseLettersSet: "0-9a-z",
+            CypherCharacterSet.AlphaNumericsSet: "0-9A-Za-z",
+            CypherCharacterSet.Base64Set: "0-9A-Za-z +/",
+            CypherCharacterSet.ArithmeticCharactersSet: "0-9A-Za-z +-*/",
+            CypherCharacterSet.AlphaNumericSymbolsSet: "0-9A-Za-z +-*/= !#$%&?@^_|~"
+            ].sorted(by: {$0.key.count > $1.key.count})
+        assert(CypherCharacterSet.StandardCharacterSet.count ==  standardSets.count,
+               "StandardCharacterSet.count(\(CypherCharacterSet.StandardCharacterSet.count))"
+                + " != "
+                + "standardSets.count(\(standardSets.count))")
+        standardSets.forEach { e in
+            if val.contains(e.key) {
+                strArray.append(e.value)
+                val.remove(e.key)
             }
-            guard bit < CypherCharacterSet.TypeEnd.rawValue else {
-                return nil
-            }
-            let r = CypherCharacterSet(rawValue: bit)
-            bit <<= 1
-            return r
         }
+
+        // 2nd: other characters
+        strArray.append(val.string)
+
+        return strArray.joined(separator: " ")
     }
+
+    // MARK: Initializers
+    /// Creates a new instance with the specified raw value.
+    public init(rawValue: UInt32) {self.rawValue = rawValue }
+
+    // MARK: Constants
+    /// The following constant specifies character sets used with `get(count:in:)`.
+    public static let ExclamationMark         = CypherCharacterSet(rawValue: 0x00000001) // "!"
+    public static let QuotationMark           = CypherCharacterSet(rawValue: 0x00000002) // '"'
+    public static let NumberSign              = CypherCharacterSet(rawValue: 0x00000004) // "#"
+    public static let DollarSign              = CypherCharacterSet(rawValue: 0x00000008) // "$"
+    public static let PercentSign             = CypherCharacterSet(rawValue: 0x00000010) // "%"
+    public static let Ampersand               = CypherCharacterSet(rawValue: 0x00000020) // "&"
+    public static let Apostrophe              = CypherCharacterSet(rawValue: 0x00000040) // "'"
+    public static let Parenthesises           = CypherCharacterSet(rawValue: 0x00000080) // "(", ")"
+    public static let Asterisk                = CypherCharacterSet(rawValue: 0x00000100) // "*"
+    public static let PlusSign                = CypherCharacterSet(rawValue: 0x00000200) // "+"
+    public static let Comma                   = CypherCharacterSet(rawValue: 0x00000400) // ","
+    public static let HyphenMinus             = CypherCharacterSet(rawValue: 0x00000800) // "-"
+    public static let FullStop                = CypherCharacterSet(rawValue: 0x00001000) // "."
+    public static let Solidus                 = CypherCharacterSet(rawValue: 0x00002000) // "/"
+    public static let DecimalDigits           = CypherCharacterSet(rawValue: 0x00004000) // "0".."9"
+    public static let Colon                   = CypherCharacterSet(rawValue: 0x00008000) // ":"
+    public static let Semicolon               = CypherCharacterSet(rawValue: 0x00010000) // ";"
+    public static let LessAndGreaterThanSigns = CypherCharacterSet(rawValue: 0x00020000) // "<", ">"
+    public static let EqualsSign              = CypherCharacterSet(rawValue: 0x00040000) // "="
+    public static let QuestionMark            = CypherCharacterSet(rawValue: 0x00080000) // "?"
+    public static let CommercialAt            = CypherCharacterSet(rawValue: 0x00100000) // "@"
+    public static let UppercaseLatinAlphabets = CypherCharacterSet(rawValue: 0x00200000) // "A".."Z"
+    public static let SquareBrackets          = CypherCharacterSet(rawValue: 0x00400000) // "[", "]"
+    public static let ReverseSolidus          = CypherCharacterSet(rawValue: 0x00800000) // "\"
+    public static let CircumflexAccent        = CypherCharacterSet(rawValue: 0x01000000) // "^"
+    public static let LowLine                 = CypherCharacterSet(rawValue: 0x02000000) // "_"
+    public static let GraveAccent             = CypherCharacterSet(rawValue: 0x04000000) // "`"
+    public static let LowercaseLatinAlphabets = CypherCharacterSet(rawValue: 0x08000000) // "a".."z"
+    public static let CurlyBrackets           = CypherCharacterSet(rawValue: 0x10000000) // "{", "}"
+    public static let VerticalLine            = CypherCharacterSet(rawValue: 0x20000000) // "|"
+    public static let Tilde                   = CypherCharacterSet(rawValue: 0x40000000) // "~"
+    public static let TypeEnd                 = CypherCharacterSet(rawValue: 0x80000000) // Type End
     
-    var count: Int {
-        // count bits whose value is "1"
-        return self.makeIterator().map {_ in 1}.reduce(0) {$0+$1}
-    }
-    
-    static let ExclamationMark         = CypherCharacterSet(rawValue: 0x00000001) // "!"
-    static let QuotationMark           = CypherCharacterSet(rawValue: 0x00000002) // '"'
-    static let NumberSign              = CypherCharacterSet(rawValue: 0x00000004) // "#"
-    static let DollarSign              = CypherCharacterSet(rawValue: 0x00000008) // "$"
-    static let PercentSign             = CypherCharacterSet(rawValue: 0x00000010) // "%"
-    static let Ampersand               = CypherCharacterSet(rawValue: 0x00000020) // "&"
-    static let Apostrophe              = CypherCharacterSet(rawValue: 0x00000040) // "'"
-    static let Parenthesises           = CypherCharacterSet(rawValue: 0x00000080) // "(", ")"
-    static let Asterisk                = CypherCharacterSet(rawValue: 0x00000100) // "*"
-    static let PlusSign                = CypherCharacterSet(rawValue: 0x00000200) // "+"
-    static let Comma                   = CypherCharacterSet(rawValue: 0x00000400) // ","
-    static let HyphenMinus             = CypherCharacterSet(rawValue: 0x00000800) // "-"
-    static let FullStop                = CypherCharacterSet(rawValue: 0x00001000) // "."
-    static let Solidus                 = CypherCharacterSet(rawValue: 0x00002000) // "/"
-    static let DecimalDigits           = CypherCharacterSet(rawValue: 0x00004000) // "0".."9"
-    static let Colon                   = CypherCharacterSet(rawValue: 0x00008000) // ":"
-    static let Semicolon               = CypherCharacterSet(rawValue: 0x00010000) // ";"
-    static let LessAndGreaterThanSigns = CypherCharacterSet(rawValue: 0x00020000) // "<", ">"
-    static let EqualsSign              = CypherCharacterSet(rawValue: 0x00040000) // "="
-    static let QuestionMark            = CypherCharacterSet(rawValue: 0x00080000) // "?"
-    static let CommercialAt            = CypherCharacterSet(rawValue: 0x00100000) // "@"
-    static let UppercaseLatinAlphabets = CypherCharacterSet(rawValue: 0x00200000) // "A".."Z"
-    static let SquareBrackets          = CypherCharacterSet(rawValue: 0x00400000) // "[", "]"
-    static let ReverseSolidus          = CypherCharacterSet(rawValue: 0x00800000) // "\"
-    static let CircumflexAccent        = CypherCharacterSet(rawValue: 0x01000000) // "^"
-    static let LowLine                 = CypherCharacterSet(rawValue: 0x02000000) // "_"
-    static let GraveAccent             = CypherCharacterSet(rawValue: 0x04000000) // "`"
-    static let LowercaseLatinAlphabets = CypherCharacterSet(rawValue: 0x08000000) // "a".."z"
-    static let CurlyBrackets           = CypherCharacterSet(rawValue: 0x10000000) // "{", "}"
-    static let VerticalLine            = CypherCharacterSet(rawValue: 0x20000000) // "|"
-    static let Tilde                   = CypherCharacterSet(rawValue: 0x40000000) // "~"
-    static let TypeEnd                 = CypherCharacterSet(rawValue: 0x80000000) // Type End
-    
-    static let UpperCaseLettersSet:     CypherCharacterSet = [.DecimalDigits, .UppercaseLatinAlphabets]
-    static let LowerCaseLettersSet:     CypherCharacterSet = [.DecimalDigits, .LowercaseLatinAlphabets]
-    static let AlphaNumericsSet:        CypherCharacterSet = [.DecimalDigits, .UppercaseLatinAlphabets, .LowercaseLatinAlphabets] // 0..9 A-Za-z
-    static let Base64Set:               CypherCharacterSet = [.AlphaNumericsSet, .PlusSign, .Solidus] // 0..9 A-Za-z + /
-    static let ArithmeticCharactersSet: CypherCharacterSet = [.AlphaNumericsSet, .PlusSign, .HyphenMinus, .Asterisk, .Solidus]
-    static let AlphaNumericSymbolsSet:  CypherCharacterSet = [
+    public static let UpperCaseLettersSet:     CypherCharacterSet = [.DecimalDigits, .UppercaseLatinAlphabets]
+    public static let LowerCaseLettersSet:     CypherCharacterSet = [.DecimalDigits, .LowercaseLatinAlphabets]
+    public static let AlphaNumericsSet:        CypherCharacterSet = [.DecimalDigits, .UppercaseLatinAlphabets, .LowercaseLatinAlphabets] // 0..9 A-Za-z
+    public static let Base64Set:               CypherCharacterSet =
+        [.AlphaNumericsSet, .PlusSign, .Solidus] // 0..9 A-Za-z + /
+    public static let ArithmeticCharactersSet: CypherCharacterSet = [.AlphaNumericsSet, .PlusSign, .HyphenMinus, .Asterisk, .Solidus]
+    public static let AlphaNumericSymbolsSet:  CypherCharacterSet = [
         .AlphaNumericsSet,
         .ExclamationMark,
         .NumberSign,
@@ -111,8 +138,9 @@ struct CypherCharacterSet: OptionSet, Hashable {
         .VerticalLine,
         .Tilde
     ]
-    static let AllCharactersSet = CypherCharacterSet(rawValue: CypherCharacterSet.TypeEnd.rawValue - 1)
-    static let StandardCharacterSet = [
+    public static let AllCharactersSet =
+        CypherCharacterSet(rawValue: CypherCharacterSet.TypeEnd.rawValue - 1)
+    public static let StandardCharacterSet = [
         DecimalDigits,
         UppercaseLatinAlphabets,
         LowercaseLatinAlphabets,
@@ -124,7 +152,12 @@ struct CypherCharacterSet: OptionSet, Hashable {
         AlphaNumericSymbolsSet,
     ]
 
-    internal var tostr: String {
+    fileprivate var count: Int {
+        // count bits whose value is "1"
+        return self.makeIterator().map {_ in 1}.reduce(0) {$0+$1}
+    }
+
+    fileprivate var tostr: String {
         let s: String
         switch self {
         case .ExclamationMark:         s = "!"
@@ -163,48 +196,31 @@ struct CypherCharacterSet: OptionSet, Hashable {
         return s
     }
 
-    var string: String {
-        return CypherCharacterSet.iterator.flatMap {
-            self.contains($0) ? $0.tostr : nil
-            }.joined()
-    }
-    
-    var description: String {
-        var val = self
-        var strArray: [String] = []
-
-        // 1st: standard character set
-        let standardSets = [
-            CypherCharacterSet.DecimalDigits: "0-9",
-            CypherCharacterSet.UppercaseLatinAlphabets: "A-Z",
-            CypherCharacterSet.LowercaseLatinAlphabets: "a-z",
-            CypherCharacterSet.UpperCaseLettersSet: "0-9A-Z",
-            CypherCharacterSet.LowerCaseLettersSet: "0-9a-z",
-            CypherCharacterSet.AlphaNumericsSet: "0-9A-Za-z",
-            CypherCharacterSet.Base64Set: "0-9A-Za-z +/",
-            CypherCharacterSet.ArithmeticCharactersSet: "0-9A-Za-z +-*/",
-            CypherCharacterSet.AlphaNumericSymbolsSet: "0-9A-Za-z +-*/= !#$%&?@^_|~"
-            ].sorted(by: {$0.key.count > $1.key.count})
-        assert(CypherCharacterSet.StandardCharacterSet.count ==  standardSets.count,
-               "StandardCharacterSet.count(\(CypherCharacterSet.StandardCharacterSet.count))"
-            + " != "
-            + "standardSets.count(\(standardSets.count))")
-        standardSets.forEach { e in
-            if val.contains(e.key) {
-                strArray.append(e.value)
-                val.remove(e.key)
+    // MARK: Methods
+    /// Returns an iterator over the sets of characters.
+    public func makeIterator() -> AnyIterator<CypherCharacterSet> {
+        var bit: UInt32 = 1
+        return AnyIterator {
+            while bit < CypherCharacterSet.TypeEnd.rawValue &&
+                !self.contains(CypherCharacterSet(rawValue: bit)) {
+                    bit <<= 1
             }
+            guard bit < CypherCharacterSet.TypeEnd.rawValue else {
+                return nil
+            }
+            let r = CypherCharacterSet(rawValue: bit)
+            bit <<= 1
+            return r
         }
-
-        // 2nd: other characters
-        strArray.append(val.string)
-
-        return strArray.joined(separator: " ")
     }
 }
 
 // MARK: - Errors
-
+/// Errors
+///
+/// - outOfRange: Parameter `count` is less than 1 or greater than `COUNT_MAX`.
+/// - unexpected: An unexpected error occurrs.
+/// - OSError: OS API returns an error.
 enum RandomDataError: Error {
     case outOfRange
     case unexpected
@@ -213,6 +229,7 @@ enum RandomDataError: Error {
 
 // https://stackoverflow.com/questions/39176196/how-to-provide-a-localized-description-with-an-error-type-in-swift
 extension RandomDataError: LocalizedError {
+    /// Returns a description of the error.
     public var errorDescription: String?  {
         switch self {
         case .outOfRange:
@@ -227,6 +244,12 @@ extension RandomDataError: LocalizedError {
 
 // https://stackoverflow.com/questions/39972512/cannot-invoke-xctassertequal-with-an-argument-list-errortype-xmpperror
 extension RandomDataError: Equatable {
+    /// Returns a Boolean value indicating whether two values are equal.
+    ///
+    /// - Parameters:
+    ///   - lhs: A left hand side expression.
+    ///   - rhs: A right hand side expression.
+    /// - Returns: `True` if `lhs` equals `rhs`, otherwise `false`.
     static func == (lhs: RandomDataError, rhs: RandomDataError) -> Bool {
         switch (lhs, rhs) {
         case (.outOfRange, .outOfRange):
@@ -241,25 +264,23 @@ extension RandomDataError: Equatable {
     }
 }
 
-// MARK: - RandomData
-/**
-
- Generate Random Data and String
-
- */
+// MARK: - Class
+/// Gets a random value as a type `Data` or `String`.
 class RandomData {
+    // MARK: Properties
+    /// Returns a shared singleton object.    
     static let shared    = RandomData()
+
+    // MARK: Constants
+    /// Maximum value for the parameter `count`
     static let COUNT_MAX = 1024
 
-    /**
-
-     Get a random data as type "Data" whose size is "count"
-
-     - paramter count: returned data size in bytes
-
-     - returns: a random data as type "Data"
-
-     */
+    // MARK: Methods
+    /// Get a random data as type `Data` whose size is `count`.
+    ///
+    /// - Parameter count: returned data size in bytes.
+    /// - Returns: a random data as a type `Data`.
+    /// - Throws: OSError
     func get(count: Int) throws -> Data {
         guard case 1...RandomData.COUNT_MAX = count else {
             throw RandomDataError.outOfRange
@@ -280,7 +301,13 @@ class RandomData {
         return data
     }
     
-    func get(count: Int, in charSet: CypherCharacterSet ) throws -> String {
+    ///  Get a random data as a type `String` whose size is `count`.
+    ///
+    /// - Parameter count: Returned string size in bytes.
+    /// - Parameter in: A set of characters to get a randaom string.
+    /// - Returns: A random data as a type `String`.
+    /// - Throws: unexpected, OSError
+    func get(count: Int, in charSet: CypherCharacterSet) throws -> String {
         guard case 1...RandomData.COUNT_MAX = count else {
             throw RandomDataError.outOfRange
         }

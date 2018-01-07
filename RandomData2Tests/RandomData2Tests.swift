@@ -10,27 +10,8 @@ import XCTest
 @testable import RandomData2
 
 class RandomData2Tests: XCTestCase {
-    
-    let Primes = [
-        2, 3, 5, 7, 11, 13, 17, 19, 23, 29,
-        31, 37, 41, 43, 47, 53, 59, 61, 67, 71,
-        73, 79, 83, 89, 97, 101, 103, 107, 109, 113,
-        127, 131, 137, 139, 149, 151, 157, 163, 167, 173,
-        179, 181, 191, 193, 197, 199, 211, 223, 227, 229,
-        233, 239, 241, 251, 257, 263, 269, 271, 277, 281,
-        283, 293, 307, 311, 313, 317, 331, 337, 347, 349,
-        353, 359, 367, 373, 379, 383, 389, 397, 401, 409,
-        419, 421, 431, 433, 439, 443, 449, 457, 461, 463,
-        467, 479, 487, 491, 499, 503, 509, 521, 523, 541,
-        547, 557, 563, 569, 571, 577, 587, 593, 599, 601,
-        607, 613, 617, 619, 631, 641, 643, 647, 653, 659,
-        661, 673, 677, 683, 691, 701, 709, 719, 727, 733,
-        739, 743, 751, 757, 761, 769, 773, 787, 797, 809,
-        811, 821, 823, 827, 829, 839, 853, 857, 859, 863,
-        877, 881, 883, 887, 907, 911, 919, 929, 937, 941,
-        947, 953, 967, 971, 977, 983, 991, 997, 1009, 1013,
-        1019, 1021
-    ]
+
+    // MARK: - Constant Definitions
 
     let Deutsch = """
 https://ja.wikipedia.org/wiki/歓喜の歌
@@ -144,50 +125,166 @@ https://ja.wikipedia.org/wiki/歓喜の歌
 星々の上に、神は必ず住みたもう
 """
 
+    var allChars = ""
+
+    let Primes = [
+        2, 3, 5, 7, 11, 13, 17, 19, 23, 29,
+        31, 37, 41, 43, 47, 53, 59, 61, 67, 71,
+        73, 79, 83, 89, 97, 101, 103, 107, 109, 113,
+        127, 131, 137, 139, 149, 151, 157, 163, 167, 173,
+        179, 181, 191, 193, 197, 199, 211, 223, 227, 229,
+        233, 239, 241, 251, 257, 263, 269, 271, 277, 281,
+        283, 293, 307, 311, 313, 317, 331, 337, 347, 349,
+        353, 359, 367, 373, 379, 383, 389, 397, 401, 409,
+        419, 421, 431, 433, 439, 443, 449, 457, 461, 463,
+        467, 479, 487, 491, 499, 503, 509, 521, 523, 541,
+        547, 557, 563, 569, 571, 577, 587, 593, 599, 601,
+        607, 613, 617, 619, 631, 641, 643, 647, 653, 659,
+        661, 673, 677, 683, 691, 701, 709, 719, 727, 733,
+        739, 743, 751, 757, 761, 769, 773, 787, 797, 809,
+        811, 821, 823, 827, 829, 839, 853, 857, 859, 863,
+        877, 881, 883, 887, 907, 911, 919, 929, 937, 941,
+        947, 953, 967, 971, 977, 983, 991, 997, 1009, 1013,
+        1019, 1021
+    ]
+    var counts: [Int] = []
+    let counts_error: [Int] = [0, -1, J1RandomData.COUNT_MAX + 1, Int.min, Int.max]
+    let cypherCharSet: [CypherCharacterSet] =
+        CypherCharacterSet.StandardCharacterSet + [.AllCharactersSet]
+
+    // MARK: Set up and Tear down
+
     override func setUp() {
         super.setUp()
         // Put setup code here. This method is called before the invocation of each test method in the class.
-
-
+        allChars  = "0123456789"
+        allChars += "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        allChars += "abcdefghijklmnopqrstuvwxyz"
+        allChars += "!#$%&'()*+,-./"
+        allChars += ":;<>=?@"
+        allChars += "[]^_`{}|~"
+        allChars += "\"" + "\\"
+        counts = { ( Primes + [1, 8, 10, 16, 32, 64, 256, 1024] ).sorted() }()
     }
     
     override func tearDown() {
         // Put teardown code here. This method is called after the invocation of each test method in the class.
         super.tearDown()
     }
-    
-    func testExample() {
+
+    // MARK: - Test Methods
+
+    func testCypherCharacterSet() {
+        print("CypherCharacterSet All Characters")
+        var i: UInt32 = 1
+        var chars = ""
+        for c in CypherCharacterSet.iterator {
+            let str = c.string
+            let dsc = c.description
+            print(String(format:"%08x", c.rawValue), str, dsc, separator: " : ")
+            XCTAssertEqual(c.rawValue, i)
+            XCTAssertFalse(str.uppercased().contains("UNKNOWN"))
+            XCTAssertFalse(dsc.uppercased().contains("UNKNOWN"))
+            i <<= 1
+            chars += c.string
+        }
+        print()
+        let chars_sorted = chars.unicodeScalars.sorted()
+        print("CypherCharacterSet all characters = \(chars_sorted)")
+        XCTAssertEqual(chars_sorted, allChars.unicodeScalars.sorted())
+
+        print("CypherCharacterSet Summation")
+        var s: CypherCharacterSet = []
+        for c in CypherCharacterSet.iterator {
+            s.insert(c)
+            let str = s.string
+            let dsc = s.description
+            print(String(format:"%08x", s.rawValue), str, dsc, separator: " : ")
+            XCTAssertFalse(str.uppercased().contains("UNKNOWN"))
+            XCTAssertFalse(dsc.uppercased().contains("UNKNOWN"))
+        }
+        print()
+    }
+
+    func testJ1RandomDataGet_distribution() {
+        print("J1RandomData.shared.get -> String Distribution Test")
+        for s in cypherCharSet {
+            print("Cypher Charcter Set in \(s.string)")
+            var counts: [Character: Int] = Dictionary(uniqueKeysWithValues: s.string.map { ($0, 0) })
+            let c = counts.count * 10
+            var r = ""
+            XCTAssertNoThrow(r = try J1RandomData.shared.get(count: c, in: s))
+            r.forEach { counts[$0]! += 1 }
+            var count = 1
+            counts.keys.sorted().forEach {
+                print($0, ":", String(format:"%3d", counts[$0] ?? -1),
+                      separator: "", terminator: ((count % 10 == 0) || (count == counts.count) ? "\n" : "   "))
+                count += 1
+            }
+            let sum = counts.reduce(0) { $0 + $1.value }
+            print("sum = \(sum)")
+            counts.values.forEach {
+                XCTAssertNotNil($0)
+                XCTAssertNotEqual($0, 0)
+            }
+            XCTAssertEqual(sum, c)
+        }
+    }
+
+    func testJ1RandomDataGet() {
         // This is an example of a functional test case.
         // Use XCTAssert and related functions to verify your tests produce the correct results.
 
-        print("Hello, World!")
-
-        for c in CypherCharacterSet.iterator {
-            print(String(format:"%08x", c.rawValue), ":", c.string)
+        print("J1RandomData.shared.get -> Data")
+        for c in counts {
+            print(c, " ", separator: "", terminator: "")
+            var r = Data()
+            XCTAssertNoThrow(r = try J1RandomData.shared.get(count: c))
+            XCTAssertEqual(r.count, c, "length error r.count=\(r.count) c=\(c)")
         }
         print()
 
-        print("==========")
-        var nums = Primes
-        nums += [1, 8, 10, 16, 32, 64, 256, 1024]
-        nums.sort()
-        for n in nums {
-            print(n, " ", separator: "", terminator: "")
-            for s: CypherCharacterSet in
-                [.DecimalDigits, .UpperCaseLettersSet, .LowerCaseLettersSet, .AlphaNumericsSet,
-                 .Base64Set, .ArithmeticCharactersSet, .AlphaNumericSymbolsSet, .AllCharactersSet  ] {
-                    let str = try? J1RandomData.shared.get(count: n, in: s)
-                    XCTAssertNotNil(str, "J1RandomData.get error count=\(n) in=\(s.string)")
-                    XCTAssertEqual(str!.count, n, "length error str.count=\(str!.count) n=\(n)")
+        print("J1RandomData.shared.get -> String")
+        for c in counts {
+            print(c, " ", separator: "", terminator: "")
+            for s in cypherCharSet {
+                var r = ""
+                XCTAssertNoThrow(r = try J1RandomData.shared.get(count: c, in: s))
+                XCTAssertEqual(r.count, c, "length error r.count=\(r.count) c=\(c)")
+            }
+        }
+        print()
+    }
+
+    func testJ1RandomDataGet_error() {
+        print("J1RandomData.shared.get -> Data")
+        for c in counts_error {
+            XCTAssertThrowsError(_ = try J1RandomData.shared.get(count: c)) {
+                error in
+                print("error='\(error.localizedDescription)' count=\(c)")
+                XCTAssertEqual(error as! J1RandomDataError, J1RandomDataError.outOfRange)
+            }
+        }
+
+        print("J1RandomData.shared.get -> String")
+        for c in counts_error {
+            for s in cypherCharSet {
+                XCTAssertThrowsError(_ = try J1RandomData.shared.get(count: c, in: s)) {
+                    error in
+                    print("error='\(error.localizedDescription)' count=\(c) in=\(s.description)")
+                    XCTAssertEqual(error as! J1RandomDataError, J1RandomDataError.outOfRange)
+                }
             }
         }
     }
-    
+
+    // MARK: Performance Test
+
     func testPerformanceExample() {
         // This is an example of a performance test case.
         self.measure {
             // Put the code you want to measure the time of here.
         }
     }
-    
+
 }

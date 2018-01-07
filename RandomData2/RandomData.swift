@@ -9,10 +9,16 @@
 import Foundation
 import Darwin
 
+// MARK: - CypherCharacterSet
+/**
+
+Character Set in Randaom String
+
+ */
 struct CypherCharacterSet: OptionSet, Hashable {
     let rawValue: UInt32
     init(rawValue: UInt32) { self.rawValue = rawValue }
-    var hashValue: Int { return Int(self.rawValue) }
+    var hashValue: Int     { return Int(self.rawValue) }
     
     static var iterator: AnyIterator<CypherCharacterSet> {
         var value: CypherCharacterSet.RawValue = 1
@@ -31,7 +37,7 @@ struct CypherCharacterSet: OptionSet, Hashable {
         return AnyIterator {
             while bit < CypherCharacterSet.TypeEnd.rawValue &&
                 !self.contains(CypherCharacterSet(rawValue: bit)) {
-                bit <<= 1
+                    bit <<= 1
             }
             guard bit < CypherCharacterSet.TypeEnd.rawValue else {
                 return nil
@@ -43,6 +49,7 @@ struct CypherCharacterSet: OptionSet, Hashable {
     }
     
     var count: Int {
+        // count bits whose value is "1"
         return self.makeIterator().map {_ in 1}.reduce(0) {$0+$1}
     }
     
@@ -105,8 +112,19 @@ struct CypherCharacterSet: OptionSet, Hashable {
         .Tilde
     ]
     static let AllCharactersSet = CypherCharacterSet(rawValue: CypherCharacterSet.TypeEnd.rawValue - 1)
+    static let StandardCharacterSet = [
+        DecimalDigits,
+        UppercaseLatinAlphabets,
+        LowercaseLatinAlphabets,
+        UpperCaseLettersSet,
+        LowerCaseLettersSet,
+        AlphaNumericsSet,
+        Base64Set,
+        ArithmeticCharactersSet,
+        AlphaNumericSymbolsSet,
+    ]
 
-    fileprivate var tostr: String {
+    internal var tostr: String {
         let s: String
         switch self {
         case .ExclamationMark:         s = "!"
@@ -119,7 +137,7 @@ struct CypherCharacterSet: OptionSet, Hashable {
         case .Parenthesises:           s = "()"
         case .Asterisk:                s = "*"
         case .PlusSign:                s = "+"
-        case .Comma:                   s = ""
+        case .Comma:                   s = ","
         case .HyphenMinus:             s = "-"
         case .FullStop:                s = "."
         case .Solidus:                 s = "/"
@@ -148,11 +166,18 @@ struct CypherCharacterSet: OptionSet, Hashable {
     var string: String {
         return CypherCharacterSet.iterator.flatMap {
             self.contains($0) ? $0.tostr : nil
-        }.joined()
+            }.joined()
     }
     
     var description: String {
-        let specialSets = [
+        var val = self
+        var strArray: [String] = []
+
+        // 1st: standard character set
+        let standardSets = [
+            CypherCharacterSet.DecimalDigits: "0-9",
+            CypherCharacterSet.UppercaseLatinAlphabets: "A-Z",
+            CypherCharacterSet.LowercaseLatinAlphabets: "a-z",
             CypherCharacterSet.UpperCaseLettersSet: "0-9A-Z",
             CypherCharacterSet.LowerCaseLettersSet: "0-9a-z",
             CypherCharacterSet.AlphaNumericsSet: "0-9A-Za-z",
@@ -160,38 +185,88 @@ struct CypherCharacterSet: OptionSet, Hashable {
             CypherCharacterSet.ArithmeticCharactersSet: "0-9A-Za-z +-*/",
             CypherCharacterSet.AlphaNumericSymbolsSet: "0-9A-Za-z +-*/= !#$%&?@^_|~"
             ].sorted(by: {$0.key.count > $1.key.count})
-        
-        var val = self
-        var strArray: [String] = []
-        specialSets.forEach { e in
+        assert(CypherCharacterSet.StandardCharacterSet.count ==  standardSets.count,
+               "StandardCharacterSet.count(\(CypherCharacterSet.StandardCharacterSet.count))"
+            + " != "
+            + "standardSets.count(\(standardSets.count))")
+        standardSets.forEach { e in
             if val.contains(e.key) {
                 strArray.append(e.value)
                 val.remove(e.key)
             }
         }
+
+        // 2nd: other characters
         strArray.append(val.string)
 
         return strArray.joined(separator: " ")
     }
 }
 
+// MARK: - Errors
+
 enum J1RandomDataError: Error {
-    case unexpected
     case outOfRange
-    case secError(error: OSStatus)
+    case unexpected
+    case OSError(error: OSStatus)
 }
 
+// https://stackoverflow.com/questions/39176196/how-to-provide-a-localized-description-with-an-error-type-in-swift
+extension J1RandomDataError: LocalizedError {
+    public var errorDescription: String?  {
+        switch self {
+        case .outOfRange:
+            return "Out of Range"
+        case .unexpected:
+            return "Unexpected Error"
+        case .OSError(let error):
+            return "SecRandomCopyBytes Error(\(error))"
+        }
+    }
+}
+
+// https://stackoverflow.com/questions/39972512/cannot-invoke-xctassertequal-with-an-argument-list-errortype-xmpperror
+extension J1RandomDataError: Equatable {
+    static func == (lhs: J1RandomDataError, rhs: J1RandomDataError) -> Bool {
+        switch (lhs, rhs) {
+        case (.outOfRange, .outOfRange):
+            return true
+        case (.unexpected, .unexpected):
+            return true
+        case (.OSError(let error1), .OSError(let error2)):
+            return error1 == error2
+        default:
+            return false
+        }
+    }
+}
+
+// MARK: - J1RandomData
+/**
+
+ Generate Random Data and String
+
+ */
 class J1RandomData {
-    static let shared = J1RandomData()
-    static let MaxCount = 1024
-    
+    static let shared    = J1RandomData()
+    static let COUNT_MAX = 1024
+
+    /**
+
+     Get a random data as type "Data" whose size is "count"
+
+     - paramter count: returned data size in bytes
+
+     - returns: a random data as type "Data"
+
+     */
     func get(count: Int) throws -> Data {
-        guard case 1...J1RandomData.MaxCount = count else {
+        guard case 1...J1RandomData.COUNT_MAX = count else {
             throw J1RandomDataError.outOfRange
         }
         
         // http://blog.sarabande.jp/post/92199466318
-        // allocate zeroed memory area whose size is length
+        // allocate zeroed memory area whose size is "count"
         var data = Data(count: count)
         
         // generate a random data and write to the buffer
@@ -200,13 +275,13 @@ class J1RandomData {
             error = SecRandomCopyBytes(kSecRandomDefault, count, bytes)
         }
         guard error == errSecSuccess else {
-            throw J1RandomDataError.secError(error: error)
+            throw J1RandomDataError.OSError(error: error)
         }
         return data
     }
     
     func get(count: Int, in charSet: CypherCharacterSet ) throws -> String {
-        guard case 1...J1RandomData.MaxCount = count else {
+        guard case 1...J1RandomData.COUNT_MAX = count else {
             throw J1RandomDataError.outOfRange
         }
         
@@ -225,11 +300,12 @@ class J1RandomData {
         var string = ""
         string.reserveCapacity(count)
         while string.count < count {
-            let indexCount = min(indexTotalCount, J1RandomData.MaxCount)
+            let indexCount = min(indexTotalCount, J1RandomData.COUNT_MAX)
             // J1RandomData.get generates count bytes random data
             // calculate the enough size of random data
 
             let rand = try self.get(count: indexCount)
+
             // let rand = Data(count: indexCount) // when DEBUG
             let indecies = rand.als(radix: UInt8(charCount))
 
@@ -247,4 +323,4 @@ class J1RandomData {
     }
 }
 
-
+// https://qiita.com/masanori-inukai/items/663e23f2390bf52fcffd

@@ -51,6 +51,20 @@
     },
     {
       "file": "/Users/jun1ro1/Documents/Xcode/RandomData2/RandomData2/CryptorCore.swift",
+      "line": null,
+      "symbol": "CryptorError",
+      "symbol_kind": "source.lang.swift.decl.extension",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/jun1ro1/Documents/Xcode/RandomData2/RandomData2/CryptorCore.swift",
+      "line": null,
+      "symbol": "CryptorError",
+      "symbol_kind": "source.lang.swift.decl.extension",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/jun1ro1/Documents/Xcode/RandomData2/RandomData2/CryptorCore.swift",
       "line": 14,
       "symbol": "CryptorError",
       "symbol_kind": "source.lang.swift.decl.enum",
@@ -58,7 +72,7 @@
     },
     {
       "file": "/Users/jun1ro1/Documents/Xcode/RandomData2/RandomData2/CryptorCore.swift",
-      "line": 190,
+      "line": 237,
       "symbol": "CryptorCore",
       "symbol_kind": "source.lang.swift.decl.class",
       "warning": "undocumented"
@@ -338,21 +352,21 @@
     },
     {
       "file": "/Users/jun1ro1/Documents/Xcode/RandomData2/RandomData2/RandomData.swift",
-      "line": 225,
+      "line": 224,
       "symbol": "RandomDataError.outOfRange",
       "symbol_kind": "source.lang.swift.decl.enumelement",
       "warning": "undocumented"
     },
     {
       "file": "/Users/jun1ro1/Documents/Xcode/RandomData2/RandomData2/RandomData.swift",
-      "line": 226,
+      "line": 225,
       "symbol": "RandomDataError.unexpected",
       "symbol_kind": "source.lang.swift.decl.enumelement",
       "warning": "undocumented"
     },
     {
       "file": "/Users/jun1ro1/Documents/Xcode/RandomData2/RandomData2/RandomData.swift",
-      "line": 227,
+      "line": 226,
       "symbol": "RandomDataError.OSError",
       "symbol_kind": "source.lang.swift.decl.enumelement",
       "warning": "undocumented"

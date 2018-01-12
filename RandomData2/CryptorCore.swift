@@ -18,7 +18,54 @@ enum CryptorError: Error {
     case wrongPassword
     case notOpened
     case opened
-    case cccryptError(error: CCCryptorStatus)
+    case CCCryptError(error: CCCryptorStatus)
+}
+
+extension CryptorError: LocalizedError {
+    /// Returns a description of the error.
+    public var errorDescription: String?  {
+        switch self {
+        case .unexpected:
+            return "Unexpected Error"
+        case .outOfRange:
+            return "Out of Range"
+        case .invalidCharacter:
+            return "Invalid Character"
+        case .wrongPassword:
+            return "Wrong Password"
+        case .notOpened:
+            return "Cryptor is not Opened"
+        case .opened:
+            return "Cryptor is Opened"
+        case .CCCryptError(let error):
+            return "CCCrypt Error(\(error))"
+        }
+    }
+}
+
+// https://stackoverflow.com/questions/39972512/cannot-invoke-xctassertequal-with-an-argument-list-errortype-xmpperror
+extension CryptorError: Equatable {
+    /// Returns a Boolean value indicating whether two values are equal.
+    ///
+    /// - Parameters:
+    ///   - lhs: A left hand side expression.
+    ///   - rhs: A right hand side expression.
+    /// - Returns: `True` if `lhs` equals `rhs`, otherwise `false`.
+    static func == (lhs: CryptorError, rhs: CryptorError) -> Bool {
+        switch (lhs, rhs) {
+        case (.unexpected,       .unexpected),
+             (.outOfRange,       .outOfRange),
+             (.invalidCharacter, .invalidCharacter),
+             (.wrongPassword,    .wrongPassword),
+             (.notOpened,        .notOpened),
+             (.opened,           .opened):
+            return true
+        case (.CCCryptError(let error1), .CCCryptError(let error2)):
+            return error1 == error2
+        default:
+            return false
+        }
+    }
 }
 
 fileprivate extension Data {
@@ -52,7 +99,7 @@ fileprivate extension Data {
             return cipher
         }
         else {
-            throw CryptorError.cccryptError(error: status)
+            throw CryptorError.CCCryptError(error: status)
         }
     }
 
@@ -83,7 +130,7 @@ fileprivate extension Data {
             return plain
         }
         else {
-            throw CryptorError.cccryptError(error: status)
+            throw CryptorError.CCCryptError(error: status)
         }
     }
 
@@ -132,6 +179,15 @@ fileprivate class Validator {
     var strEncryptedMark: String? = nil
 
     init?(key: CryptorKeyType) {
+//        var query: [String: Any] = [
+//            kSecClass as String: kSecClassGenericPassword,
+//            kSecAttrSynchronizable as String: kCFBooleanTrue,
+//        ]
+//
+//        var status: OSStatus = errSecSuccess
+//        status = SecItemCopyMatching(query, <#T##result: UnsafeMutablePointer<CFTypeRef?>?##UnsafeMutablePointer<CFTypeRef?>?#>)
+//
+
         guard var binMark: CryptorKeyType = try? RandomData.shared.get(count: 16) else {
             return nil
         }
@@ -258,7 +314,7 @@ class CryptorCore {
             print(String(reflecting: type(of: self)), "\(#function) binKEK   =", binKEK as NSData)
         #endif
         guard status == CCCryptorStatus(kCCSuccess) else {
-            throw CryptorError.cccryptError(error: status)
+            throw CryptorError.CCCryptError(error: status)
         }
         return binKEK
     }

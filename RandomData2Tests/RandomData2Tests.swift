@@ -174,6 +174,99 @@ https://ja.wikipedia.org/wiki/歓喜の歌
 
     // MARK: - Test Methods
 
+    func testCryptor() {
+        print("cryptor.open, cryptor.close")
+        var password = "The quick brown fox jumps over the lazy white dog."
+        XCTAssertNoThrow( try CryptorCore.shared.create(password: password) )
+
+        var plainText   = "The plain text. very long long 123456789012345678901234567890"
+        var cipherText  = ""
+        var replainText = ""
+        let cryptor = Cryptor()
+        XCTAssertNoThrow( try cryptor.open(password: password) )
+        XCTAssertNoThrow( cipherText  = try cryptor.encrypt(plain: plainText) )
+        XCTAssertNoThrow( replainText = try cryptor.decrypt(cipher: cipherText) )
+        XCTAssertNoThrow( try cryptor.close() )
+        print("plainText   =", plainText)
+        print("cipherText  =", cipherText)
+        print("replainTExt =", replainText)
+        XCTAssertEqual(plainText, replainText)
+
+        print("cryptor.open closure Deutsch")
+        XCTAssertNoThrow( try cryptor.open(password: password) {
+            plainText   = Deutsch
+            cipherText  = try! cryptor.encrypt(plain: plainText)
+            replainText = try! cryptor.decrypt(cipher: cipherText)
+            print("plainText   =", plainText)
+            print("cipherText  =", cipherText)
+            print("replainTExt =", replainText)
+            XCTAssertEqual(plainText, replainText)
+            }
+        )
+
+        print("cryptor.open closure Japanisch")
+        XCTAssertNoThrow( try cryptor.open(password: password) {
+            plainText   = Japanisch
+            cipherText  = try! cryptor.encrypt(plain: plainText)
+            replainText = try! cryptor.decrypt(cipher: cipherText)
+            print("plainText   =", plainText)
+            print("cipherText  =", cipherText)
+            print("replainTExt =", replainText)
+            XCTAssertEqual(plainText, replainText)
+            }
+        )
+
+        print("cryptor.change")
+        let newpassword = "pass"
+        XCTAssertNoThrow( try cryptor.change(password: password, to: newpassword) )
+        password = newpassword
+
+        print("cryptor.open closure Deutsch")
+        XCTAssertNoThrow( try cryptor.open(password: password) {
+            plainText   = Deutsch
+            cipherText  = try! cryptor.encrypt(plain: plainText)
+            replainText = try! cryptor.decrypt(cipher: cipherText)
+            print("plainText   =", plainText)
+            print("cipherText  =", cipherText)
+            print("replainTExt =", replainText)
+            XCTAssertEqual(plainText, replainText)
+            }
+        )
+
+        print("cryptor.open closure Japanisch")
+        XCTAssertNoThrow( try cryptor.open(password: password) {
+            plainText   = Japanisch
+            cipherText  = try! cryptor.encrypt(plain: plainText)
+            replainText = try! cryptor.decrypt(cipher: cipherText)
+            print("----------")
+            print("plainText   =", plainText)
+            print("cipherText  =", cipherText)
+            print("replainTExt =", replainText)
+            XCTAssertEqual(plainText, replainText)
+            }
+        )
+
+        print("cryptor.open closure random strings")
+        for c in counts {
+            print(c, " ", separator: "", terminator: "")
+            var r = ""
+            XCTAssertNoThrow(r = try RandomData.shared.get(count: c, in: .AllCharactersSet))
+            XCTAssertEqual(r.count, c, "length error r.count=\(r.count) c=\(c)")
+            XCTAssertNoThrow( try cryptor.open(password: password) {
+                plainText   = r
+                cipherText  = try! cryptor.encrypt(plain: plainText)
+                replainText = try! cryptor.decrypt(cipher: cipherText)
+                print("----------")
+                print("plainText   =", plainText)
+                print("cipherText  =", cipherText)
+                print("replainTExt =", replainText)
+                XCTAssertEqual(plainText, replainText)
+                }
+            )
+        }
+
+    }
+
     func testCypherCharacterSet() {
         print("CypherCharacterSet All Characters")
         var i: UInt32 = 1

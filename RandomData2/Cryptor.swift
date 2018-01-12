@@ -8,7 +8,7 @@
 
 import Foundation
 
-class Cryptor {
+public class Cryptor {
     static var core: CryptorCore = CryptorCore.shared
     var key: CryptorKeyType?
     

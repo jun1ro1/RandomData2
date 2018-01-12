@@ -215,8 +215,7 @@ public struct CypherCharacterSet: OptionSet, Hashable {
     }
 }
 
-// MARK: - Errors
-/// Errors
+/// Errors that `RandomData` functions return
 ///
 /// - outOfRange: Parameter `count` is less than 1 or greater than `COUNT_MAX`.
 /// - unexpected: An unexpected error occurrs.
@@ -252,9 +251,8 @@ extension RandomDataError: Equatable {
     /// - Returns: `True` if `lhs` equals `rhs`, otherwise `false`.
     static func == (lhs: RandomDataError, rhs: RandomDataError) -> Bool {
         switch (lhs, rhs) {
-        case (.outOfRange, .outOfRange):
-            return true
-        case (.unexpected, .unexpected):
+        case (.outOfRange, .outOfRange),
+             (.unexpected, .unexpected):
             return true
         case (.OSError(let error1), .OSError(let error2)):
             return error1 == error2

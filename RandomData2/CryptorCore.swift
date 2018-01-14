@@ -179,15 +179,6 @@ fileprivate class Validator {
     var strEncryptedMark: String? = nil
 
     init?(key: CryptorKeyType) {
-//        var query: [String: Any] = [
-//            kSecClass as String: kSecClassGenericPassword,
-//            kSecAttrSynchronizable as String: kCFBooleanTrue,
-//        ]
-//
-//        var status: OSStatus = errSecSuccess
-//        status = SecItemCopyMatching(query, <#T##result: UnsafeMutablePointer<CFTypeRef?>?##UnsafeMutablePointer<CFTypeRef?>?#>)
-//
-
         guard var binMark: CryptorKeyType = try? RandomData.shared.get(count: 16) else {
             return nil
         }
@@ -242,6 +233,51 @@ fileprivate class Validator {
     }
 } // Validator
 
+class SecItem {
+    var query: [String: Any]
+    init() {
+        query = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrSynchronizable as String: kCFBooleanTrue,
+            kSecAttrDescription as String: "PasswortTresor"
+        ]
+    }
+
+    func read() -> [String: AnyObject]? {
+        query[ kSecReturnData as String] = kCFBooleanTrue
+        query[ kSecMatchLimit as String] = kSecMatchLimitOne
+        query[ kSecReturnAttributes as String] = kCFBooleanTrue
+        query[ kSecReturnData as String] = kCFBooleanTrue
+
+        var result: AnyObject?
+        let status = withUnsafeMutablePointer(to: &result) {
+            SecItemCopyMatching(self.query as CFDictionary, UnsafeMutablePointer($0))
+        }
+        guard status != errSecItemNotFound else {
+            return nil
+        }
+        guard status == noErr else {
+            return nil
+        }
+        guard let items = result as? Dictionary<String, AnyObject> else {
+            return nil
+        }
+        return items
+    }
+
+    func write() {
+        self.query[kSecValueData as String] = "init".data(using: .utf8)
+        let status = SecItemAdd(self.query as CFDictionary, nil)
+        print(status)
+    }
+
+    func update() {
+        let attr: [String: AnyObject] = [ kSecValueData as String: "new password".data(using: .utf8) as AnyObject]
+        let status = SecItemUpdate(self.query as CFDictionary, attr as CFDictionary)
+        print(status)
+    }
+
+}
 
 class CryptorCore {
     // constants
@@ -274,6 +310,12 @@ class CryptorCore {
         self.strEncCEK = ""
         self.sessions = [:]
         self.validator = nil
+
+        let si = SecItem()
+        si.write()
+        var result = si.read()
+        si.update()
+        result = si.read()
     }
 
     // MARK: - methods

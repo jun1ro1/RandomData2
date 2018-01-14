@@ -236,18 +236,25 @@ fileprivate class Validator {
 class SecItem {
     var query: [String: Any]
     init() {
+        self.query = [:]
+    }
+
+    static var shared = SecItem()
+
+    private func initQuery() {
         query = [
-            kSecClass as String: kSecClassGenericPassword,
+            kSecClass              as String: kSecClassGenericPassword,
             kSecAttrSynchronizable as String: kCFBooleanTrue,
-            kSecAttrDescription as String: "PasswortTresor"
+            kSecAttrDescription    as String: "PasswortTresor"
         ]
     }
 
-    func read() -> [String: AnyObject]? {
-        query[ kSecReturnData as String] = kCFBooleanTrue
-        query[ kSecMatchLimit as String] = kSecMatchLimitOne
+    func read() -> String? {
+        self.initQuery()
+        query[ kSecReturnData as String]       = kCFBooleanTrue
+        query[ kSecMatchLimit as String]       = kSecMatchLimitOne
         query[ kSecReturnAttributes as String] = kCFBooleanTrue
-        query[ kSecReturnData as String] = kCFBooleanTrue
+        query[ kSecReturnData as String]       = kCFBooleanTrue
 
         var result: AnyObject?
         let status = withUnsafeMutablePointer(to: &result) {
@@ -262,21 +269,79 @@ class SecItem {
         guard let items = result as? Dictionary<String, AnyObject> else {
             return nil
         }
-        return items
+        guard let data = items[kSecValueData as String] as? Data else {
+            return nil
+        }
+        guard let str = String.init(data: data, encoding: .utf8) else {
+            return nil
+        }
+        print("kSecValueData = ", str)
+        return str
     }
 
-    func write() {
-        self.query[kSecValueData as String] = "init".data(using: .utf8)
+    func write(_ str: String) {
+        self.initQuery()
+        self.query[kSecValueData as String] = str.data(using: .utf8)
         let status = SecItemAdd(self.query as CFDictionary, nil)
-        print(status)
+        print("SecItemAdd = ", status)
     }
 
-    func update() {
-        let attr: [String: AnyObject] = [ kSecValueData as String: "new password".data(using: .utf8) as AnyObject]
+    func update(_ str: String) {
+        self.initQuery()
+        let attr: [String: AnyObject] = [ kSecValueData as String: str.data(using: .utf8) as AnyObject]
         let status = SecItemUpdate(self.query as CFDictionary, attr as CFDictionary)
-        print(status)
+        print("SecItemUpdate = ", status)
     }
 
+    func delete() {
+        self.initQuery()
+        let status = SecItemDelete(self.query as NSDictionary)
+        print("SecItemDelete = ", status)
+    }
+}
+
+struct EncryptionBase {
+    var version: String
+    var salt:    String
+    var rounds:  UInt32
+    var key:     String
+
+    init() {
+        self.version = "0"
+        self.salt    = ""
+        self.rounds  = 1
+        self.key     = ""
+    }
+
+    init(version: String, salt: String, rounds: UInt32, key: String) {
+        self.version = version
+        self.salt    = salt
+        self.rounds  = rounds
+        self.key     = key
+    }
+
+    init?(_ str: String) {
+        let ary = str.split(separator: ":")
+        guard ary.count == 4 else {
+            return nil
+        }
+        guard let i = UInt32(String(ary[2])) else {
+            return nil
+        }
+        self.rounds  = i
+        self.version = String(ary[0])
+        self.salt    = String(ary[1])
+        self.key     = String(ary[3])
+    }
+
+    var string: String {
+        return [
+            self.version,
+            self.salt,
+            String(self.rounds),
+            self.key
+        ].joined(separator: ":")
+    }
 }
 
 class CryptorCore {
@@ -311,11 +376,10 @@ class CryptorCore {
         self.sessions = [:]
         self.validator = nil
 
-        let si = SecItem()
-        si.write()
-        var result = si.read()
-        si.update()
-        result = si.read()
+        let eb = EncryptionBase(version: "1", salt: self.strSALT, rounds: self.rounds, key: self.strEncCEK)
+        SecItem.shared.delete()
+        SecItem.shared.write(eb.string)
+        _ = SecItem.shared.read()
     }
 
     // MARK: - methods
@@ -396,6 +460,11 @@ class CryptorCore {
             print(String(reflecting: type(of: self)), "\(#function) binCEK   =", binCEK as NSData)
             print(String(reflecting: type(of: self)), "\(#function) binEncCEK=", binEncCEK as NSData)
         #endif
+
+
+        let eb = EncryptionBase(version: "1", salt: self.strSALT, rounds: self.rounds, key: self.strEncCEK)
+        SecItem.shared.update(eb.string)
+        _ = SecItem.shared.read()
     }
 
     func open(password: String, cryptor: Cryptor) throws -> CryptorKeyType {

@@ -174,55 +174,68 @@ fileprivate extension String {
     }
 } // extension String
 
+
 fileprivate class Validator {
-    var strHashedMark:    String? = nil
-    var strEncryptedMark: String? = nil
+    var hashedMark:    CryptorKeyType? = nil
+    var encryptedMark: CryptorKeyType? = nil
+
+    static let label: String = String(describing: Cryptor.self)
+
+    init?(_ str: String) {
+        let ary = str.split(separator: ":")
+        guard ary.count == 2 else {
+            return nil
+        }
+        self.hashedMark     = Data(base64Encoded: String(ary[0]))
+        self.encryptedMark  = Data(base64Encoded: String(ary[1]))
+    }
+
+    var string: String {
+        return [
+            self.hashedMark?.base64EncodedString() ?? "",
+            self.encryptedMark?.base64EncodedString() ?? "",
+            ].joined(separator: ":")
+    }
 
     init?(key: CryptorKeyType) {
-        guard var binMark: CryptorKeyType = try? RandomData.shared.get(count: 16) else {
+        guard var mark: CryptorKeyType = try? RandomData.shared.get(count: 16) else {
             return nil
         }
-        defer { binMark.reset() }
+        defer { mark.reset() }
 
-        self.strHashedMark = binMark.hash().base64EncodedString()
+        // get a hashed mark
+        self.hashedMark = mark.hash()
 
         #if DEBUG
-            print(String(reflecting: type(of: self)), "\(#function) binMark   =", binMark as NSData)
-            print(String(reflecting: type(of: self)), "\(#function) strHshMark=", self.strHashedMark!)
+            print(String(reflecting: type(of: self)), "\(#function) mark   =", mark as NSData)
+            print(String(reflecting: type(of: self)), "\(#function) hshMark=", self.hashedMark! as NSData)
         #endif
 
-        guard var binEncryptedMark: CryptorKeyType = try? binMark.encrypt(with: key) else {
+        self.encryptedMark = try? mark.encrypt(with: key)
+        guard self.encryptedMark != nil else {
             return nil
         }
-        defer { binEncryptedMark.reset() }
-        self.strEncryptedMark = binEncryptedMark.base64EncodedString()
 
         #if DEBUG
-            print(String(reflecting: type(of: self)), "\(#function) strEncryptedMark=", self.strEncryptedMark!)
+            print(String(reflecting: type(of: self)), "\(#function) encryptedMark=", self.encryptedMark! as NSData)
         #endif
     }
 
     func validate(key: CryptorKeyType) -> Bool {
-        guard self.strHashedMark != nil && self.strEncryptedMark != nil else {
+        guard self.hashedMark != nil && self.encryptedMark != nil else {
             return false
         }
 
-        guard var hashedMark
-            = CryptorKeyType(base64Encoded: self.strHashedMark!, options: .ignoreUnknownCharacters) else {
-                return false
-        }
-        defer { hashedMark.reset() }
-
         do {
             // get binary Mark
-            var decryptedMark: CryptorKeyType = try self.strEncryptedMark!.decrypt(with: key)
+            var decryptedMark: CryptorKeyType = try self.encryptedMark!.decrypt(with: key)
             defer { decryptedMark.reset() }
 
             var hashedDecryptedMark: CryptorKeyType = decryptedMark.hash()
             defer { hashedDecryptedMark.reset() }
 
             #if DEBUG
-                print(String(reflecting: type(of: self)), "\(#function) hashedMark          =", hashedMark as NSData)
+                print(String(reflecting: type(of: self)), "\(#function) hashedMark          =", hashedMark! as NSData)
                 print(String(reflecting: type(of: self)), "\(#function) hashedDecryptedMark =", hashedDecryptedMark as NSData)
             #endif
 
@@ -231,30 +244,42 @@ fileprivate class Validator {
             return false
         }
     }
+
 } // Validator
 
-class SecItem {
+
+class SecureStore {
     var query: [String: Any]
+
+    var dateCreated: Date? {
+        return self.query[kSecAttrCreationDate as String] as? Date
+    }
+
+    var dateModified: Date? {
+        return self.query[kSecAttrModificationDate as String] as? Date
+    }
+
     init() {
         self.query = [:]
     }
 
-    static var shared = SecItem()
+    static var shared = SecureStore()
 
-    private func initQuery() {
-        query = [
+    private func prepare(label: String) {
+        self.query = [
             kSecClass              as String: kSecClassGenericPassword,
             kSecAttrSynchronizable as String: kCFBooleanTrue,
-            kSecAttrDescription    as String: "PasswortTresor"
+            kSecAttrDescription    as String: "PasswortTresor",
+            kSecAttrLabel          as String: label,
         ]
     }
 
-    func read() -> String? {
-        self.initQuery()
-        query[ kSecReturnData as String]       = kCFBooleanTrue
-        query[ kSecMatchLimit as String]       = kSecMatchLimitOne
-        query[ kSecReturnAttributes as String] = kCFBooleanTrue
-        query[ kSecReturnData as String]       = kCFBooleanTrue
+    func read(label: String) -> Data? {
+        self.prepare(label: label)
+        self.query[ kSecReturnData       as String] = kCFBooleanTrue
+        self.query[ kSecMatchLimit       as String] = kSecMatchLimitOne
+        self.query[ kSecReturnAttributes as String] = kCFBooleanTrue
+        self.query[ kSecReturnData       as String] = kCFBooleanTrue
 
         var result: AnyObject?
         let status = withUnsafeMutablePointer(to: &result) {
@@ -272,74 +297,69 @@ class SecItem {
         guard let data = items[kSecValueData as String] as? Data else {
             return nil
         }
-        guard let str = String.init(data: data, encoding: .utf8) else {
-            return nil
-        }
-        print("kSecValueData = ", str)
-        return str
+        print("kSecValueData = ", data as NSData)
+        return data
     }
 
-    func write(_ str: String) {
-        self.initQuery()
-        self.query[kSecValueData as String] = str.data(using: .utf8)
+    func write(label: String, _ data: Data) {
+        self.prepare(label: label)
+        self.query[kSecValueData  as String] = data
         let status = SecItemAdd(self.query as CFDictionary, nil)
         print("SecItemAdd = ", status)
     }
 
-    func update(_ str: String) {
-        self.initQuery()
-        let attr: [String: AnyObject] = [ kSecValueData as String: str.data(using: .utf8) as AnyObject]
+    func update(label: String, _ data: Data) {
+        self.prepare(label: label)
+        let attr: [String: AnyObject] = [kSecValueData as String: data as AnyObject]
         let status = SecItemUpdate(self.query as CFDictionary, attr as CFDictionary)
         print("SecItemUpdate = ", status)
     }
 
-    func delete() {
-        self.initQuery()
+    func delete(label: String) {
+        self.prepare(label: label)
         let status = SecItemDelete(self.query as NSDictionary)
         print("SecItemDelete = ", status)
     }
 }
 
-struct EncryptionBase {
+struct CryptorSeed {
     var version: String
-    var salt:    String
-    var rounds:  UInt32
-    var key:     String
+    var salt:         CryptorKeyType?
+    var key:          CryptorKeyType?
+    var dateCreated:  Date?
+    var dateModified: Date?
+
+    static let label: String = String(describing: Cryptor.self)
 
     init() {
-        self.version = "0"
-        self.salt    = ""
-        self.rounds  = 1
-        self.key     = ""
+        self.version      = "0"
+        self.salt         = nil
+        self.key          = nil
+        self.dateCreated  = nil
+        self.dateModified = nil
     }
 
-    init(version: String, salt: String, rounds: UInt32, key: String) {
+    init(version: String, salt: CryptorKeyType, key: CryptorKeyType) {
         self.version = version
         self.salt    = salt
-        self.rounds  = rounds
         self.key     = key
     }
 
     init?(_ str: String) {
         let ary = str.split(separator: ":")
-        guard ary.count == 4 else {
+        guard ary.count == 3 else {
             return nil
         }
-        guard let i = UInt32(String(ary[2])) else {
-            return nil
-        }
-        self.rounds  = i
         self.version = String(ary[0])
-        self.salt    = String(ary[1])
-        self.key     = String(ary[3])
+        self.salt    = Data(base64Encoded: String(ary[1]))
+        self.key     = Data(base64Encoded: String(ary[2]))
     }
 
     var string: String {
         return [
             self.version,
-            self.salt,
-            String(self.rounds),
-            self.key
+            self.salt?.base64EncodedString() ?? "",
+            self.key?.base64EncodedString() ?? "",
         ].joined(separator: ":")
     }
 }
@@ -349,7 +369,7 @@ class CryptorCore {
     static let MaxPasswordLength = 1000
 
     // secitem
-    let version = 1
+    let version = "1"
     var strSALT: String
     var rounds: UInt32
     var strEncCEK: String
@@ -375,11 +395,6 @@ class CryptorCore {
         self.strEncCEK = ""
         self.sessions = [:]
         self.validator = nil
-
-        let eb = EncryptionBase(version: "1", salt: self.strSALT, rounds: self.rounds, key: self.strEncCEK)
-        SecItem.shared.delete()
-        SecItem.shared.write(eb.string)
-        _ = SecItem.shared.read()
     }
 
     // MARK: - methods
@@ -425,6 +440,61 @@ class CryptorCore {
         return binKEK
     }
 
+    func prepare(password: String) throws {
+        if var data = SecureStore.shared.read(label: CryptorSeed.label) {
+            defer{ data.reset() }
+
+            guard var d = SecureStore.shared.read(label: Validator.label) else {
+                throw CryptorError.unexpected // brokenSecItem
+            }
+            defer { d.reset() }
+
+            guard var s = String(data: d, encoding: .utf8) else {
+                throw CryptorError.unexpected // brokenSecItem
+            }
+            defer { s = "" }
+
+            guard var validator = Validator(s) else {
+                throw CryptorError.unexpected // brokenSecItem
+            }
+            // defer { validator.reset() }
+
+            // get a CryptorCore value from SecItem
+            guard var str = String(data: data, encoding: .utf8) else {
+                throw CryptorError.unexpected // brokenSecItem
+            }
+            defer{ str = "" }
+            guard var seed = CryptorSeed(str) else {
+                throw CryptorError.unexpected  // brokenSecItem
+            }
+            seed.dateCreated  = SecureStore.shared.dateCreated
+            seed.dateModified = SecureStore.shared.dateModified
+
+            guard var salt = seed.salt else {
+                throw CryptorError.unexpected  // brokenSecItem
+            }
+            defer{ salt.reset() }
+
+            // get a CEK encrypted with a KEK
+            guard var cekEnc = seed.key else {
+                throw CryptorError.unexpected  // brokenSecItem
+            }
+            defer{ cekEnc.reset() }
+
+            // derivate a KEK with the password and the SALT
+            var kek = try self.getKEK(password: password, salt: salt)
+            defer{ kek.reset() }
+
+            // get a CEK
+            var cek = try cekEnc.decrypt(with: kek)
+            defer{ cek.reset() }
+
+            guard validator.validate(key: cek) == true else {
+                throw CryptorError.wrongPassword
+            }
+        }
+    }
+
     func create(password: String) throws {
         // convert the password to a Data
         guard var binPASS: CryptorKeyType = password.data(using: .utf8, allowLossyConversion: true) else {
@@ -460,11 +530,6 @@ class CryptorCore {
             print(String(reflecting: type(of: self)), "\(#function) binCEK   =", binCEK as NSData)
             print(String(reflecting: type(of: self)), "\(#function) binEncCEK=", binEncCEK as NSData)
         #endif
-
-
-        let eb = EncryptionBase(version: "1", salt: self.strSALT, rounds: self.rounds, key: self.strEncCEK)
-        SecItem.shared.update(eb.string)
-        _ = SecItem.shared.read()
     }
 
     func open(password: String, cryptor: Cryptor) throws -> CryptorKeyType {

@@ -175,9 +175,13 @@ https://ja.wikipedia.org/wiki/歓喜の歌
     // MARK: - Test Methods
 
     func testCryptor() {
+        print("delete SecItem")
+        try? CryptorSeed.delete()
+        try? Validator.delete()
+
         print("cryptor.open, cryptor.close")
-        let password = "The quick brown fox jumps over the lazy white dog."
-        XCTAssertNoThrow( try CryptorCore.shared.prepare(password: password) )
+        var password = "The quick brown fox jumps over the lazy white dog."
+        XCTAssertNoThrow( try Cryptor.prepare(password: password) )
 
         var plainText   = "The plain text. very long long 123456789012345678901234567890"
         var cipherText  = ""
@@ -216,7 +220,7 @@ https://ja.wikipedia.org/wiki/歓喜の歌
             }
         )
 
-/*
+
         print("cryptor.change")
         let newpassword = "pass"
         XCTAssertNoThrow( try cryptor.change(password: password, to: newpassword) )
@@ -265,7 +269,10 @@ https://ja.wikipedia.org/wiki/歓喜の歌
                 }
             )
         }
-*/
+
+        print("delete SecItem")
+        try? CryptorSeed.delete()
+        try? Validator.delete()
     }
 
     func testCypherCharacterSet() {
@@ -300,7 +307,7 @@ https://ja.wikipedia.org/wiki/歓喜の歌
         print()
     }
 
-    func zzztestRandomDataGet_distribution() {
+    func testRandomDataGet_distribution() {
         print("RandomData.shared.get -> String Distribution Test")
         for s in cypherCharSet {
             print("Cypher Charcter Set in \(s.string)")

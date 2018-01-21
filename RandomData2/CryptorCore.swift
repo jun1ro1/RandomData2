@@ -369,10 +369,21 @@ struct CryptorSeed {
         try SecureStore.shared.write(label: CryptorSeed.label, data)
     }
 
+    static func update(_ seed:CryptorSeed) throws {
+        guard var data = seed.string.data(using: .utf8) else {
+            throw CryptorError.unexpected
+        }
+        defer { data.reset() }
+        try SecureStore.shared.update(label: CryptorSeed.label, data)
+    }
+
+    static func delete() throws {
+        try SecureStore.shared.delete(label: CryptorSeed.label)
+    }
 } // CryptorSeed
 
 // MARK: -
-fileprivate class Validator {
+internal class Validator {
     var hashedMark:    CryptorKeyType? = nil
     var encryptedMark: CryptorKeyType? = nil
 
@@ -470,6 +481,10 @@ fileprivate class Validator {
         }
         defer { data.reset() }
         try SecureStore.shared.write(label: Validator.label, data)
+    }
+
+    static func delete() throws {
+        try SecureStore.shared.delete(label: Validator.label)
     }
 } // Validator
 
@@ -614,42 +629,6 @@ class CryptorCore {
         }
     }
 
-//    func create(password: String) throws {
-//        // convert the password to a Data
-//        guard var binPASS: CryptorKeyType = password.data(using: .utf8, allowLossyConversion: true) else {
-//            throw CryptorError.invalidCharacter
-//        }
-//        defer { binPASS.reset() }
-//
-//        // create SALT
-//        var binSALT: CryptorKeyType = try RandomData.shared.get(count: 16)
-//        defer { binSALT.reset() }
-//
-//        // derivate a KEK with the password and the SALT
-//        let binKEK = try self.getKEK(password: password, salt: binSALT)
-//
-//        // create a CEK
-//        var binCEK: CryptorKeyType = try RandomData.shared.get(count: Int(kCCKeySizeAES256))
-//        defer { binCEK.reset() }
-//
-//        // encrypt the CEK with the KEK
-//        // https://stackoverflow.com/questions/25754147/issue-using-cccrypt-commoncrypt-in-swift
-//        // https://stackoverflow.com/questions/37680361/aes-encryption-in-swift
-//        var binEncCEK: CryptorKeyType = try binCEK.encrypt(with: binKEK)
-//        defer { binEncCEK.reset() }
-//
-//        // store a validator, a salt and an encrypted CEK
-//        self.validator = Validator(key: binCEK)
-//        self.strSALT = binSALT.base64EncodedString()
-//        self.strEncCEK = binEncCEK.base64EncodedString()
-//
-//        #if DEBUG
-//            print(String(reflecting: type(of: self)), "\(#function) binSALT  =", binSALT as NSData)
-//            print(String(reflecting: type(of: self)), "\(#function) binKEK   =", binKEK as NSData)
-//            print(String(reflecting: type(of: self)), "\(#function) binCEK   =", binCEK as NSData)
-//            print(String(reflecting: type(of: self)), "\(#function) binEncCEK=", binEncCEK as NSData)
-//        #endif
-//    }
 
     func open(password: String, cryptor: Cryptor) throws -> CryptorKeyType {
         var status: CCCryptorStatus = CCCryptorStatus(kCCSuccess)
@@ -717,53 +696,64 @@ class CryptorCore {
         try cryptors.forEach { try self.close(cryptor: $0.cryptor) }
     }
 
-/*
     func change(password oldpass: String, to newpass: String) throws {
-        // get SALT
-        guard var binSALT = CryptorKeyType(base64Encoded: self.strSALT, options: .ignoreUnknownCharacters) else {
-            throw CryptorError.invalidCharacter
+        var status: CCCryptorStatus = CCCryptorStatus(kCCSuccess)
+
+        // get a seed
+        guard var seed = try CryptorSeed.read() else {
+            throw CryptorError.unexpected  // not prepared
         }
-        defer { binSALT.reset() }
+        defer { seed.reset() }
 
-        // get KEK from SALT, password
-        var binKEK = try self.getKEK(password: oldpass, salt: binSALT)
-        defer { binKEK.reset() }
+        guard var validator = try Validator.read() else {
+            throw CryptorError.unexpected // not prepared
+        }
+        defer { validator.reset() }
 
-        // get CEK with KEK
-        var binCEK: CryptorKeyType = try self.strEncCEK.decrypt(with: binKEK)
-        defer { binCEK.reset() }
+        // get a CEK encrypted with a KEK
+        guard var cekEnc = seed.key else {
+            throw CryptorError.SecItemBroken
+        }
+        defer{ cekEnc.reset() }
 
-        #if DEBUG
-            print(String(reflecting: type(of: self)), "\(#function) strEncCEK=", self.strEncCEK)
-            print(String(reflecting: type(of: self)), "\(#function) binCEK   =", binCEK as NSData)
-        #endif
+        // derivate a KEK with the password and the SALT
+        var kek = try self.getKEK(password: oldpass, seed: seed)
+        defer{ kek.reset() }
+
+        // get a CEK
+        var cek = try cekEnc.decrypt(with: kek)
+        defer{ cek.reset() }
+
+        guard validator.validate(key: cek) == true else {
+            throw CryptorError.wrongPassword
+        }
 
         // check CEK
-        guard self.validator?.validate(key: binCEK) == true else {
+        guard validator.validate(key: cek) == true else {
             #if DEBUG
                 print(String(reflecting: type(of: self)), "\(#function) validate= false")
             #endif
             throw CryptorError.wrongPassword
         }
 
+
         // change KEK
-        var binNewKEK = try self.getKEK(password: newpass, salt: binSALT)
-        defer { binNewKEK.reset() }
+        var newkek = try self.getKEK(password: newpass, seed: seed)
+        defer { newkek.reset() }
 
         // crypt a CEK with a new KEK
-        var binNewEncCEK: CryptorKeyType = try binCEK.encrypt(with: binNewKEK)
-        defer { binNewEncCEK.reset() }
+        var newcekEnc: CryptorKeyType = try cek.encrypt(with: newkek)
+        defer { newcekEnc.reset() }
 
-        // store a new encrypted CEK
-        self.strEncCEK = binNewEncCEK.base64EncodedString()
+        seed.key = newcekEnc
+        try CryptorSeed.update(seed)
 
         #if DEBUG
-            print(String(reflecting: type(of: self)), "\(#function) binNewKEK    =", binNewKEK as NSData)
-            print(String(reflecting: type(of: self)), "\(#function) binCEK       =", binCEK as NSData)
-            print(String(reflecting: type(of: self)), "\(#function) binNewEncCEK =", binNewEncCEK as NSData)
+            print(String(reflecting: type(of: self)), "\(#function) newkek    =", newkek as NSData)
+            print(String(reflecting: type(of: self)), "\(#function) cek       =", cek as NSData)
+            print(String(reflecting: type(of: self)), "\(#function) newkekEnc =", newcekEnc as NSData)
         #endif
     }
-*/
 
     func encrypt(cryptor: Cryptor, plain: Data) throws -> Data {
         guard let sek = cryptor.key else {

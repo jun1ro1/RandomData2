@@ -9,13 +9,19 @@
 import Foundation
 
 public class Cryptor {
+    static var shared: Cryptor = Cryptor()
+
     static var core: CryptorCore = CryptorCore.shared
     var key: CryptorKeyType?
     
     init() {
         self.key = nil
     }
-    
+
+    static func prepare(password: String) throws {
+        try Cryptor.core.prepare(password: password)
+    }
+
     func open(password: String) throws {
         self.key = try Cryptor.core.open(password: password, cryptor: self)
     }
@@ -33,14 +39,12 @@ public class Cryptor {
         body()
     }
 
-    /*
     func change(password oldpass: String, to newpass: String) throws {
         guard self.key == nil else {
             throw CryptorError.opened
         }
         return try Cryptor.core.change(password: oldpass, to: newpass)
     }
-*/
     
     func encrypt(plain: Data) throws -> Data {
         guard self.key != nil else {

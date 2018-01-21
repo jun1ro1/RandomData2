@@ -33,13 +33,15 @@ public class Cryptor {
         body()
     }
 
+    /*
     func change(password oldpass: String, to newpass: String) throws {
         guard self.key == nil else {
             throw CryptorError.opened
         }
         return try Cryptor.core.change(password: oldpass, to: newpass)
     }
-
+*/
+    
     func encrypt(plain: Data) throws -> Data {
         guard self.key != nil else {
             throw CryptorError.opened

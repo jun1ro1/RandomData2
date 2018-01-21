@@ -79,45 +79,85 @@ public struct CypherCharacterSet: OptionSet, Hashable {
 
     // MARK: Constants
     /// The following constant specifies character sets used with `get(count:in:)`.
+    /// Exclamation Mark             "!"
     public static let ExclamationMark         = CypherCharacterSet(rawValue: 0x00000001) // "!"
+    /// Quotation Mark               '"'
     public static let QuotationMark           = CypherCharacterSet(rawValue: 0x00000002) // '"'
+    /// Number Sign                  "#"
     public static let NumberSign              = CypherCharacterSet(rawValue: 0x00000004) // "#"
+    /// Dollar Sign                  "$"
     public static let DollarSign              = CypherCharacterSet(rawValue: 0x00000008) // "$"
+    /// Percent Sign                 "%"
     public static let PercentSign             = CypherCharacterSet(rawValue: 0x00000010) // "%"
+    /// Ampersand                    "&"
     public static let Ampersand               = CypherCharacterSet(rawValue: 0x00000020) // "&"
+    /// Apostrophe                   "'"
     public static let Apostrophe              = CypherCharacterSet(rawValue: 0x00000040) // "'"
+    /// Parenthesises                "(", ")"
     public static let Parenthesises           = CypherCharacterSet(rawValue: 0x00000080) // "(", ")"
+    /// Asterisk                     "*"
     public static let Asterisk                = CypherCharacterSet(rawValue: 0x00000100) // "*"
+    /// Plus Sign                    "+"
     public static let PlusSign                = CypherCharacterSet(rawValue: 0x00000200) // "+"
+    /// Comma                        ","
     public static let Comma                   = CypherCharacterSet(rawValue: 0x00000400) // ","
+    /// Hyphen Minus                 "-"
     public static let HyphenMinus             = CypherCharacterSet(rawValue: 0x00000800) // "-"
+    /// FullStop                     "."
     public static let FullStop                = CypherCharacterSet(rawValue: 0x00001000) // "."
+    /// Solidus                      "/"
     public static let Solidus                 = CypherCharacterSet(rawValue: 0x00002000) // "/"
+    /// Decimal Digits               "0".."9"
     public static let DecimalDigits           = CypherCharacterSet(rawValue: 0x00004000) // "0".."9"
+    /// Colon                        ":"
     public static let Colon                   = CypherCharacterSet(rawValue: 0x00008000) // ":"
+    /// Semicolon                    ";"
     public static let Semicolon               = CypherCharacterSet(rawValue: 0x00010000) // ";"
+    /// Less an dGreater than Signs  "<", ">"
     public static let LessAndGreaterThanSigns = CypherCharacterSet(rawValue: 0x00020000) // "<", ">"
+    /// Equals Sign                  "="
     public static let EqualsSign              = CypherCharacterSet(rawValue: 0x00040000) // "="
+    /// Question Mark                "?"
     public static let QuestionMark            = CypherCharacterSet(rawValue: 0x00080000) // "?"
+    /// Commercial At                "@"
     public static let CommercialAt            = CypherCharacterSet(rawValue: 0x00100000) // "@"
+    /// UppercaseLatin Alphabets     "A".."Z"
     public static let UppercaseLatinAlphabets = CypherCharacterSet(rawValue: 0x00200000) // "A".."Z"
+    /// Square Brackets              "[", "]"
     public static let SquareBrackets          = CypherCharacterSet(rawValue: 0x00400000) // "[", "]"
+    /// Reverse Solidus              "\"
     public static let ReverseSolidus          = CypherCharacterSet(rawValue: 0x00800000) // "\"
+    /// Circumflex Accent            "^"
     public static let CircumflexAccent        = CypherCharacterSet(rawValue: 0x01000000) // "^"
+    /// Low Line                     "_"
     public static let LowLine                 = CypherCharacterSet(rawValue: 0x02000000) // "_"
+    /// Grave Accent                 "`"
     public static let GraveAccent             = CypherCharacterSet(rawValue: 0x04000000) // "`"
+    /// Lowercase Latin Alphabets     "a".."z"
     public static let LowercaseLatinAlphabets = CypherCharacterSet(rawValue: 0x08000000) // "a".."z"
+    /// Curly Brackets               "{", "}"
     public static let CurlyBrackets           = CypherCharacterSet(rawValue: 0x10000000) // "{", "}"
+    /// Vertica Line                 "|"
     public static let VerticalLine            = CypherCharacterSet(rawValue: 0x20000000) // "|"
+    /// Tilde                        "~"
     public static let Tilde                   = CypherCharacterSet(rawValue: 0x40000000) // "~"
+    /// Type End: A sentinel name
     public static let TypeEnd                 = CypherCharacterSet(rawValue: 0x80000000) // Type End
-    
-    public static let UpperCaseLettersSet:     CypherCharacterSet = [.DecimalDigits, .UppercaseLatinAlphabets]
-    public static let LowerCaseLettersSet:     CypherCharacterSet = [.DecimalDigits, .LowercaseLatinAlphabets]
+
+    /// Upper case letters character set: "0".."9", "A".."Z"
+    public static let UpperCaseLettersSet:     CypherCharacterSet =
+        [.DecimalDigits, .UppercaseLatinAlphabets]
+    /// Lower case letters character set: "0".."9", "a".."z"
+    public static let LowerCaseLettersSet:     CypherCharacterSet =
+        [.DecimalDigits, .LowercaseLatinAlphabets]
+    /// Alpha Numerics character set: "0".."9", "A".."Z", "a".."z"
     public static let AlphaNumericsSet:        CypherCharacterSet = [.DecimalDigits, .UppercaseLatinAlphabets, .LowercaseLatinAlphabets] // 0..9 A-Za-z
+    /// BASE64 character set: "0".."9", "A".."Z", "+", "/"
     public static let Base64Set:               CypherCharacterSet =
         [.AlphaNumericsSet, .PlusSign, .Solidus] // 0..9 A-Za-z + /
+    /// Arithmetic character set: "0".."9", "A".."Z", "+", "-", "*", "/"
     public static let ArithmeticCharactersSet: CypherCharacterSet = [.AlphaNumericsSet, .PlusSign, .HyphenMinus, .Asterisk, .Solidus]
+    /// Alpha Numerics and Symbols character set
     public static let AlphaNumericSymbolsSet:  CypherCharacterSet = [
         .AlphaNumericsSet,
         .ExclamationMark,
@@ -138,6 +178,7 @@ public struct CypherCharacterSet: OptionSet, Hashable {
         .VerticalLine,
         .Tilde
     ]
+    /// All character set
     public static let AllCharactersSet =
         CypherCharacterSet(rawValue: CypherCharacterSet.TypeEnd.rawValue - 1)
     public static let StandardCharacterSet = [
@@ -154,7 +195,7 @@ public struct CypherCharacterSet: OptionSet, Hashable {
 
     fileprivate var count: Int {
         // count bits whose value is "1"
-        return self.makeIterator().map {_ in 1}.reduce(0) {$0+$1}
+        return self.makeIterator().map {_ in 1}.reduce(0) {$0 + $1}
     }
 
     fileprivate var tostr: String {

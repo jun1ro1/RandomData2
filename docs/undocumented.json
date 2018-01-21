@@ -72,301 +72,56 @@
     },
     {
       "file": "/Users/jun1ro1/Documents/Xcode/RandomData2/RandomData2/CryptorCore.swift",
-      "line": 237,
+      "line": 192,
+      "symbol": "SecureStore",
+      "symbol_kind": "source.lang.swift.decl.class",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/jun1ro1/Documents/Xcode/RandomData2/RandomData2/CryptorCore.swift",
+      "line": 290,
+      "symbol": "CryptorSeed",
+      "symbol_kind": "source.lang.swift.decl.struct",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/jun1ro1/Documents/Xcode/RandomData2/RandomData2/CryptorCore.swift",
+      "line": 393,
+      "symbol": "Validator",
+      "symbol_kind": "source.lang.swift.decl.class",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/jun1ro1/Documents/Xcode/RandomData2/RandomData2/CryptorCore.swift",
+      "line": 499,
       "symbol": "CryptorCore",
       "symbol_kind": "source.lang.swift.decl.class",
       "warning": "undocumented"
     },
     {
       "file": "/Users/jun1ro1/Documents/Xcode/RandomData2/RandomData2/RandomData.swift",
-      "line": 83,
-      "symbol": "CypherCharacterSet.QuotationMark",
-      "symbol_kind": "source.lang.swift.decl.var.static",
-      "warning": "undocumented"
-    },
-    {
-      "file": "/Users/jun1ro1/Documents/Xcode/RandomData2/RandomData2/RandomData.swift",
-      "line": 84,
-      "symbol": "CypherCharacterSet.NumberSign",
-      "symbol_kind": "source.lang.swift.decl.var.static",
-      "warning": "undocumented"
-    },
-    {
-      "file": "/Users/jun1ro1/Documents/Xcode/RandomData2/RandomData2/RandomData.swift",
-      "line": 85,
-      "symbol": "CypherCharacterSet.DollarSign",
-      "symbol_kind": "source.lang.swift.decl.var.static",
-      "warning": "undocumented"
-    },
-    {
-      "file": "/Users/jun1ro1/Documents/Xcode/RandomData2/RandomData2/RandomData.swift",
-      "line": 86,
-      "symbol": "CypherCharacterSet.PercentSign",
-      "symbol_kind": "source.lang.swift.decl.var.static",
-      "warning": "undocumented"
-    },
-    {
-      "file": "/Users/jun1ro1/Documents/Xcode/RandomData2/RandomData2/RandomData.swift",
-      "line": 87,
-      "symbol": "CypherCharacterSet.Ampersand",
-      "symbol_kind": "source.lang.swift.decl.var.static",
-      "warning": "undocumented"
-    },
-    {
-      "file": "/Users/jun1ro1/Documents/Xcode/RandomData2/RandomData2/RandomData.swift",
-      "line": 88,
-      "symbol": "CypherCharacterSet.Apostrophe",
-      "symbol_kind": "source.lang.swift.decl.var.static",
-      "warning": "undocumented"
-    },
-    {
-      "file": "/Users/jun1ro1/Documents/Xcode/RandomData2/RandomData2/RandomData.swift",
-      "line": 89,
-      "symbol": "CypherCharacterSet.Parenthesises",
-      "symbol_kind": "source.lang.swift.decl.var.static",
-      "warning": "undocumented"
-    },
-    {
-      "file": "/Users/jun1ro1/Documents/Xcode/RandomData2/RandomData2/RandomData.swift",
-      "line": 90,
-      "symbol": "CypherCharacterSet.Asterisk",
-      "symbol_kind": "source.lang.swift.decl.var.static",
-      "warning": "undocumented"
-    },
-    {
-      "file": "/Users/jun1ro1/Documents/Xcode/RandomData2/RandomData2/RandomData.swift",
-      "line": 91,
-      "symbol": "CypherCharacterSet.PlusSign",
-      "symbol_kind": "source.lang.swift.decl.var.static",
-      "warning": "undocumented"
-    },
-    {
-      "file": "/Users/jun1ro1/Documents/Xcode/RandomData2/RandomData2/RandomData.swift",
-      "line": 92,
-      "symbol": "CypherCharacterSet.Comma",
-      "symbol_kind": "source.lang.swift.decl.var.static",
-      "warning": "undocumented"
-    },
-    {
-      "file": "/Users/jun1ro1/Documents/Xcode/RandomData2/RandomData2/RandomData.swift",
-      "line": 93,
-      "symbol": "CypherCharacterSet.HyphenMinus",
-      "symbol_kind": "source.lang.swift.decl.var.static",
-      "warning": "undocumented"
-    },
-    {
-      "file": "/Users/jun1ro1/Documents/Xcode/RandomData2/RandomData2/RandomData.swift",
-      "line": 94,
-      "symbol": "CypherCharacterSet.FullStop",
-      "symbol_kind": "source.lang.swift.decl.var.static",
-      "warning": "undocumented"
-    },
-    {
-      "file": "/Users/jun1ro1/Documents/Xcode/RandomData2/RandomData2/RandomData.swift",
-      "line": 95,
-      "symbol": "CypherCharacterSet.Solidus",
-      "symbol_kind": "source.lang.swift.decl.var.static",
-      "warning": "undocumented"
-    },
-    {
-      "file": "/Users/jun1ro1/Documents/Xcode/RandomData2/RandomData2/RandomData.swift",
-      "line": 96,
-      "symbol": "CypherCharacterSet.DecimalDigits",
-      "symbol_kind": "source.lang.swift.decl.var.static",
-      "warning": "undocumented"
-    },
-    {
-      "file": "/Users/jun1ro1/Documents/Xcode/RandomData2/RandomData2/RandomData.swift",
-      "line": 97,
-      "symbol": "CypherCharacterSet.Colon",
-      "symbol_kind": "source.lang.swift.decl.var.static",
-      "warning": "undocumented"
-    },
-    {
-      "file": "/Users/jun1ro1/Documents/Xcode/RandomData2/RandomData2/RandomData.swift",
-      "line": 98,
-      "symbol": "CypherCharacterSet.Semicolon",
-      "symbol_kind": "source.lang.swift.decl.var.static",
-      "warning": "undocumented"
-    },
-    {
-      "file": "/Users/jun1ro1/Documents/Xcode/RandomData2/RandomData2/RandomData.swift",
-      "line": 99,
-      "symbol": "CypherCharacterSet.LessAndGreaterThanSigns",
-      "symbol_kind": "source.lang.swift.decl.var.static",
-      "warning": "undocumented"
-    },
-    {
-      "file": "/Users/jun1ro1/Documents/Xcode/RandomData2/RandomData2/RandomData.swift",
-      "line": 100,
-      "symbol": "CypherCharacterSet.EqualsSign",
-      "symbol_kind": "source.lang.swift.decl.var.static",
-      "warning": "undocumented"
-    },
-    {
-      "file": "/Users/jun1ro1/Documents/Xcode/RandomData2/RandomData2/RandomData.swift",
-      "line": 101,
-      "symbol": "CypherCharacterSet.QuestionMark",
-      "symbol_kind": "source.lang.swift.decl.var.static",
-      "warning": "undocumented"
-    },
-    {
-      "file": "/Users/jun1ro1/Documents/Xcode/RandomData2/RandomData2/RandomData.swift",
-      "line": 102,
-      "symbol": "CypherCharacterSet.CommercialAt",
-      "symbol_kind": "source.lang.swift.decl.var.static",
-      "warning": "undocumented"
-    },
-    {
-      "file": "/Users/jun1ro1/Documents/Xcode/RandomData2/RandomData2/RandomData.swift",
-      "line": 103,
-      "symbol": "CypherCharacterSet.UppercaseLatinAlphabets",
-      "symbol_kind": "source.lang.swift.decl.var.static",
-      "warning": "undocumented"
-    },
-    {
-      "file": "/Users/jun1ro1/Documents/Xcode/RandomData2/RandomData2/RandomData.swift",
-      "line": 104,
-      "symbol": "CypherCharacterSet.SquareBrackets",
-      "symbol_kind": "source.lang.swift.decl.var.static",
-      "warning": "undocumented"
-    },
-    {
-      "file": "/Users/jun1ro1/Documents/Xcode/RandomData2/RandomData2/RandomData.swift",
-      "line": 105,
-      "symbol": "CypherCharacterSet.ReverseSolidus",
-      "symbol_kind": "source.lang.swift.decl.var.static",
-      "warning": "undocumented"
-    },
-    {
-      "file": "/Users/jun1ro1/Documents/Xcode/RandomData2/RandomData2/RandomData.swift",
-      "line": 106,
-      "symbol": "CypherCharacterSet.CircumflexAccent",
-      "symbol_kind": "source.lang.swift.decl.var.static",
-      "warning": "undocumented"
-    },
-    {
-      "file": "/Users/jun1ro1/Documents/Xcode/RandomData2/RandomData2/RandomData.swift",
-      "line": 107,
-      "symbol": "CypherCharacterSet.LowLine",
-      "symbol_kind": "source.lang.swift.decl.var.static",
-      "warning": "undocumented"
-    },
-    {
-      "file": "/Users/jun1ro1/Documents/Xcode/RandomData2/RandomData2/RandomData.swift",
-      "line": 108,
-      "symbol": "CypherCharacterSet.GraveAccent",
-      "symbol_kind": "source.lang.swift.decl.var.static",
-      "warning": "undocumented"
-    },
-    {
-      "file": "/Users/jun1ro1/Documents/Xcode/RandomData2/RandomData2/RandomData.swift",
-      "line": 109,
-      "symbol": "CypherCharacterSet.LowercaseLatinAlphabets",
-      "symbol_kind": "source.lang.swift.decl.var.static",
-      "warning": "undocumented"
-    },
-    {
-      "file": "/Users/jun1ro1/Documents/Xcode/RandomData2/RandomData2/RandomData.swift",
-      "line": 110,
-      "symbol": "CypherCharacterSet.CurlyBrackets",
-      "symbol_kind": "source.lang.swift.decl.var.static",
-      "warning": "undocumented"
-    },
-    {
-      "file": "/Users/jun1ro1/Documents/Xcode/RandomData2/RandomData2/RandomData.swift",
-      "line": 111,
-      "symbol": "CypherCharacterSet.VerticalLine",
-      "symbol_kind": "source.lang.swift.decl.var.static",
-      "warning": "undocumented"
-    },
-    {
-      "file": "/Users/jun1ro1/Documents/Xcode/RandomData2/RandomData2/RandomData.swift",
-      "line": 112,
-      "symbol": "CypherCharacterSet.Tilde",
-      "symbol_kind": "source.lang.swift.decl.var.static",
-      "warning": "undocumented"
-    },
-    {
-      "file": "/Users/jun1ro1/Documents/Xcode/RandomData2/RandomData2/RandomData.swift",
-      "line": 113,
-      "symbol": "CypherCharacterSet.TypeEnd",
-      "symbol_kind": "source.lang.swift.decl.var.static",
-      "warning": "undocumented"
-    },
-    {
-      "file": "/Users/jun1ro1/Documents/Xcode/RandomData2/RandomData2/RandomData.swift",
-      "line": 115,
-      "symbol": "CypherCharacterSet.UpperCaseLettersSet",
-      "symbol_kind": "source.lang.swift.decl.var.static",
-      "warning": "undocumented"
-    },
-    {
-      "file": "/Users/jun1ro1/Documents/Xcode/RandomData2/RandomData2/RandomData.swift",
-      "line": 116,
-      "symbol": "CypherCharacterSet.LowerCaseLettersSet",
-      "symbol_kind": "source.lang.swift.decl.var.static",
-      "warning": "undocumented"
-    },
-    {
-      "file": "/Users/jun1ro1/Documents/Xcode/RandomData2/RandomData2/RandomData.swift",
-      "line": 117,
-      "symbol": "CypherCharacterSet.AlphaNumericsSet",
-      "symbol_kind": "source.lang.swift.decl.var.static",
-      "warning": "undocumented"
-    },
-    {
-      "file": "/Users/jun1ro1/Documents/Xcode/RandomData2/RandomData2/RandomData.swift",
-      "line": 118,
-      "symbol": "CypherCharacterSet.Base64Set",
-      "symbol_kind": "source.lang.swift.decl.var.static",
-      "warning": "undocumented"
-    },
-    {
-      "file": "/Users/jun1ro1/Documents/Xcode/RandomData2/RandomData2/RandomData.swift",
-      "line": 120,
-      "symbol": "CypherCharacterSet.ArithmeticCharactersSet",
-      "symbol_kind": "source.lang.swift.decl.var.static",
-      "warning": "undocumented"
-    },
-    {
-      "file": "/Users/jun1ro1/Documents/Xcode/RandomData2/RandomData2/RandomData.swift",
-      "line": 121,
-      "symbol": "CypherCharacterSet.AlphaNumericSymbolsSet",
-      "symbol_kind": "source.lang.swift.decl.var.static",
-      "warning": "undocumented"
-    },
-    {
-      "file": "/Users/jun1ro1/Documents/Xcode/RandomData2/RandomData2/RandomData.swift",
-      "line": 141,
-      "symbol": "CypherCharacterSet.AllCharactersSet",
-      "symbol_kind": "source.lang.swift.decl.var.static",
-      "warning": "undocumented"
-    },
-    {
-      "file": "/Users/jun1ro1/Documents/Xcode/RandomData2/RandomData2/RandomData.swift",
-      "line": 143,
+      "line": 184,
       "symbol": "CypherCharacterSet.StandardCharacterSet",
       "symbol_kind": "source.lang.swift.decl.var.static",
       "warning": "undocumented"
     },
     {
       "file": "/Users/jun1ro1/Documents/Xcode/RandomData2/RandomData2/RandomData.swift",
-      "line": 224,
+      "line": 265,
       "symbol": "RandomDataError.outOfRange",
       "symbol_kind": "source.lang.swift.decl.enumelement",
       "warning": "undocumented"
     },
     {
       "file": "/Users/jun1ro1/Documents/Xcode/RandomData2/RandomData2/RandomData.swift",
-      "line": 225,
+      "line": 266,
       "symbol": "RandomDataError.unexpected",
       "symbol_kind": "source.lang.swift.decl.enumelement",
       "warning": "undocumented"
     },
     {
       "file": "/Users/jun1ro1/Documents/Xcode/RandomData2/RandomData2/RandomData.swift",
-      "line": 226,
+      "line": 267,
       "symbol": "RandomDataError.OSError",
       "symbol_kind": "source.lang.swift.decl.enumelement",
       "warning": "undocumented"

@@ -18,6 +18,7 @@ enum CryptorError: Error {
     case wrongPassword
     case notOpened
     case opened
+    case notPrepared
     case SecItemBroken
     case CCCryptError(error: CCCryptorStatus)
     case SecItemError(error: OSStatus)
@@ -39,6 +40,8 @@ extension CryptorError: LocalizedError {
             return "Cryptor is not Opened"
         case .opened:
             return "Cryptor is Opened"
+        case .notPrepared:
+            return "Prepare is not called"
         case .SecItemBroken:
             return "SecItem is broken"
         case .CCCryptError(let error):
@@ -64,9 +67,13 @@ extension CryptorError: Equatable {
              (.invalidCharacter, .invalidCharacter),
              (.wrongPassword,    .wrongPassword),
              (.notOpened,        .notOpened),
-             (.opened,           .opened):
+             (.opened,           .opened),
+             (.notPrepared,   .notPrepared),
+             (.SecItemBroken, .SecItemBroken):
             return true
         case (.CCCryptError(let error1), .CCCryptError(let error2)):
+            return error1 == error2
+        case (.SecItemError(let error1), .SecItemError(let error2)):
             return error1 == error2
         default:
             return false
@@ -184,14 +191,8 @@ fileprivate extension String {
 // MARK: -
 class SecureStore {
     private var query: [String: Any]
-
-    var dateCreated: Date? {
-        return self.query[kSecAttrCreationDate as String] as? Date
-    }
-
-    var dateModified: Date? {
-        return self.query[kSecAttrModificationDate as String] as? Date
-    }
+    var dateCreated:  Date? { return self.query[kSecAttrCreationDate     as String] as? Date }
+    var dateModified: Date? { return self.query[kSecAttrModificationDate as String] as? Date }
 
     init() {
         self.query = [:]
@@ -206,9 +207,9 @@ class SecureStore {
             kSecAttrAccount        as String: label,
         ]
         #if DEBUG
-        self.query[kSecAttrDescription as String] = "PasswortTresorTEST"
+            self.query[kSecAttrDescription as String] = "PasswortTresorTEST"
         #else
-        self.query[kSecAttrDescription as String] = "PasswortTresor"
+            self.query[kSecAttrDescription as String] = "PasswortTresor"
         #endif
     }
 
@@ -239,7 +240,9 @@ class SecureStore {
             throw CryptorError.SecItemBroken
         }
 
-        print("kSecValueData = ", data as NSData)
+        #if DEBUG
+            print(String(reflecting: type(of: self)), "\(#function) kSecValueData = ", data as NSData)
+        #endif
         return data
     }
 
@@ -304,14 +307,14 @@ struct CryptorSeed {
         self.version = version
         self.salt    = salt
         if self.version == "1" {
-            self.rounds = 10000
+            self.rounds = 100000
         }
     }
 
     init(version: String, salt: CryptorKeyType, key: CryptorKeyType) {
         self.init(version: version, salt: salt)
         self.key = key
-     }
+    }
 
     init?(_ str: String) {
         let ary = str.split(separator: ":")
@@ -338,7 +341,7 @@ struct CryptorSeed {
             self.version,
             self.salt?.base64EncodedString() ?? "",
             self.key?.base64EncodedString() ?? "",
-        ].joined(separator: ":")
+            ].joined(separator: ":")
     }
 
     static func read() throws -> CryptorSeed? {
@@ -494,7 +497,7 @@ class CryptorCore {
     static let MaxPasswordLength = 1000
 
     // instance variables
-    struct Session {
+    private struct Session {
         var cryptor: Cryptor
         var binITK:  CryptorKeyType  // Inter key: the KEK(Key kncryption Key) encrypted with SEK(Session Key)
 
@@ -503,7 +506,7 @@ class CryptorCore {
             self.binITK  = key
         }
     }
-    var sessions: [Int: Session]
+    private var sessions: [Int: Session]
 
     static var shared = CryptorCore()
 
@@ -564,7 +567,7 @@ class CryptorCore {
             var validator = try Validator.read()
             defer { validator?.reset() }
 
-             // get a CEK encrypted with a KEK
+            // get a CEK encrypted with a KEK
             guard var cekEnc = seed.key else {
                 throw CryptorError.SecItemBroken
             }
@@ -635,12 +638,12 @@ class CryptorCore {
 
         // get a seed
         guard var seed = try CryptorSeed.read() else {
-            throw CryptorError.unexpected  // not prepared
+            throw CryptorError.notPrepared
         }
         defer { seed.reset() }
 
         guard var validator = try Validator.read() else {
-            throw CryptorError.unexpected // not prepared
+            throw CryptorError.notPrepared
         }
         defer { validator.reset() }
 
@@ -701,12 +704,12 @@ class CryptorCore {
 
         // get a seed
         guard var seed = try CryptorSeed.read() else {
-            throw CryptorError.unexpected  // not prepared
+            throw CryptorError.notPrepared
         }
         defer { seed.reset() }
 
         guard var validator = try Validator.read() else {
-            throw CryptorError.unexpected // not prepared
+            throw CryptorError.notPrepared
         }
         defer { validator.reset() }
 
@@ -765,11 +768,11 @@ class CryptorCore {
 
         // get a seed
         guard var seed = try CryptorSeed.read() else {
-            throw CryptorError.unexpected  // not prepared
+            throw CryptorError.notPrepared
         }
         defer { seed.reset() }
 
-       // get a CEK encrypted with a KEK
+        // get a CEK encrypted with a KEK
         guard var cekEnc = seed.key else {
             throw CryptorError.SecItemBroken
         }
@@ -791,7 +794,7 @@ class CryptorCore {
 
         // get a seed
         guard var seed = try CryptorSeed.read() else {
-            throw CryptorError.unexpected  // not prepared
+            throw CryptorError.notPrepared
         }
         defer { seed.reset() }
 
@@ -817,7 +820,7 @@ class CryptorCore {
 
         // get a seed
         guard var seed = try CryptorSeed.read() else {
-            throw CryptorError.unexpected  // not prepared
+            throw CryptorError.notPrepared
         }
         defer { seed.reset() }
 
@@ -843,7 +846,7 @@ class CryptorCore {
 
         // get a seed
         guard var seed = try CryptorSeed.read() else {
-            throw CryptorError.unexpected  // not prepared
+            throw CryptorError.notPrepared
         }
         defer { seed.reset() }
 

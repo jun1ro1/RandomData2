@@ -261,7 +261,7 @@ public struct CypherCharacterSet: OptionSet, Hashable {
 /// - outOfRange: Parameter `count` is less than 1 or greater than `COUNT_MAX`.
 /// - unexpected: An unexpected error occurrs.
 /// - OSError: OS API returns an error.
-enum RandomDataError: Error {
+public enum RandomDataError: Error {
     case outOfRange
     case unexpected
     case OSError(error: OSStatus)
@@ -290,7 +290,7 @@ extension RandomDataError: Equatable {
     ///   - lhs: A left hand side expression.
     ///   - rhs: A right hand side expression.
     /// - Returns: `True` if `lhs` equals `rhs`, otherwise `false`.
-    static func == (lhs: RandomDataError, rhs: RandomDataError) -> Bool {
+    public static func == (lhs: RandomDataError, rhs: RandomDataError) -> Bool {
         switch (lhs, rhs) {
         case (.outOfRange, .outOfRange),
              (.unexpected, .unexpected):
@@ -305,7 +305,7 @@ extension RandomDataError: Equatable {
 
 // MARK: - Class
 /// Gets a random value as a type `Data` or `String`.
-class RandomData {
+public class RandomData {
     // MARK: Properties
     /// Returns a shared singleton object.    
     static let shared    = RandomData()

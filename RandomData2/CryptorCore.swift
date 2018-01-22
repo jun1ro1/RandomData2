@@ -11,7 +11,7 @@ import Foundation
 
 typealias CryptorKeyType = Data
 
-enum CryptorError: Error {
+public enum CryptorError: Error {
     case unexpected
     case outOfRange
     case invalidCharacter
@@ -60,7 +60,7 @@ extension CryptorError: Equatable {
     ///   - lhs: A left hand side expression.
     ///   - rhs: A right hand side expression.
     /// - Returns: `True` if `lhs` equals `rhs`, otherwise `false`.
-    static func == (lhs: CryptorError, rhs: CryptorError) -> Bool {
+    public static func == (lhs: CryptorError, rhs: CryptorError) -> Bool {
         switch (lhs, rhs) {
         case (.unexpected,       .unexpected),
              (.outOfRange,       .outOfRange),
@@ -189,7 +189,7 @@ fileprivate extension String {
 
 
 // MARK: -
-class SecureStore {
+internal class SecureStore {
     private var query: [String: Any]
     var dateCreated:  Date? { return self.query[kSecAttrCreationDate     as String] as? Date }
     var dateModified: Date? { return self.query[kSecAttrModificationDate as String] as? Date }
@@ -207,9 +207,9 @@ class SecureStore {
             kSecAttrAccount        as String: label,
         ]
         #if DEBUG
-            self.query[kSecAttrDescription as String] = "PasswortTresorTEST"
+            self.query[kSecAttrService as String] = "PasswortTresorTEST"
         #else
-            self.query[kSecAttrDescription as String] = "PasswortTresor"
+            self.query[kSecAttrService as String] = "PasswortTresor"
         #endif
     }
 
@@ -283,7 +283,7 @@ class SecureStore {
 }
 
 // MARK: -
-struct CryptorSeed {
+internal struct CryptorSeed {
     var version: String
     var salt:         CryptorKeyType?
     var rounds:       UInt32
@@ -492,7 +492,7 @@ internal class Validator {
 } // Validator
 
 // MARK: -
-class CryptorCore {
+internal class CryptorCore {
     // constants
     static let MaxPasswordLength = 1000
 

@@ -79,21 +79,21 @@
     },
     {
       "file": "/Users/jun1ro1/Documents/Xcode/RandomData2/RandomData2/CryptorCore.swift",
-      "line": 290,
+      "line": 286,
       "symbol": "CryptorSeed",
       "symbol_kind": "source.lang.swift.decl.struct",
       "warning": "undocumented"
     },
     {
       "file": "/Users/jun1ro1/Documents/Xcode/RandomData2/RandomData2/CryptorCore.swift",
-      "line": 393,
+      "line": 389,
       "symbol": "Validator",
       "symbol_kind": "source.lang.swift.decl.class",
       "warning": "undocumented"
     },
     {
       "file": "/Users/jun1ro1/Documents/Xcode/RandomData2/RandomData2/CryptorCore.swift",
-      "line": 499,
+      "line": 495,
       "symbol": "CryptorCore",
       "symbol_kind": "source.lang.swift.decl.class",
       "warning": "undocumented"

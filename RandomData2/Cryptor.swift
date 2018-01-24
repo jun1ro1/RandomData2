@@ -8,12 +8,19 @@
 
 import Foundation
 
+/// The class to encrypt and decrypt a string or data
 public class Cryptor {
+
+    /// A class variable for a singleton pattern
     static var shared: Cryptor = Cryptor()
 
-    static var core: CryptorCore = CryptorCore.shared
+    /// A calss variable to access the class `CryptorCore`
+    internal static var core: CryptorCore = CryptorCore.shared
+
+    /// The instance variable to store a session key
     var key: CryptorKeyType?
     
+    /// Initializer
     init() {
         self.key = nil
     }

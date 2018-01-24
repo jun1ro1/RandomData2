@@ -174,6 +174,52 @@ https://ja.wikipedia.org/wiki/歓喜の歌
 
     // MARK: - Test Methods
 
+    func testCryptor_error() {
+        print("\n\(#function):\(#line) delete SecItem")
+        try? CryptorSeed.delete()
+        try? Validator.delete()
+
+        let password       = "The quick brown fox jumps over the lazy white dog."
+        let password_wrong = "The quick brown fox jumps over the lazy white dog"
+        let cryptor = Cryptor()
+
+        print("\n\(#function):\(#line) not prepared")
+        XCTAssertThrowsError( try cryptor.open(password: password_wrong) ) {
+            error in
+            print("error='\(error.localizedDescription)'")
+            XCTAssertEqual(error as! CryptorError, CryptorError.notPrepared)
+        }
+
+        print("\n\(#function):\(#line) prepare")
+        XCTAssertNoThrow( try Cryptor.prepare(password: password) )
+
+        print("\n\(#function):\(#line) wrong password")
+        XCTAssertThrowsError( try cryptor.open(password: password_wrong) ) {
+            error in
+            print("error='\(error.localizedDescription)'")
+            XCTAssertEqual(error as! CryptorError, CryptorError.wrongPassword)
+        }
+
+        print("\n\(#function):\(#line) not opened")
+        XCTAssertThrowsError( try cryptor.close() ) {
+            error in
+            print("error='\(error.localizedDescription)'")
+            XCTAssertEqual(error as! CryptorError, CryptorError.notOpened)
+        }
+
+        print("\n\(#function):\(#line) open")
+        XCTAssertNoThrow( try cryptor.open(password: password) )
+
+        print("\n\(#function):\(#line) close")
+        XCTAssertNoThrow( try cryptor.close() )
+
+        XCTAssertThrowsError( try cryptor.close() ) {
+            error in
+            print("error='\(error.localizedDescription)'")
+            XCTAssertEqual(error as! CryptorError, CryptorError.notOpened)
+        }
+    }
+
     func testCryptor() {
         print("delete SecItem")
         try? CryptorSeed.delete()

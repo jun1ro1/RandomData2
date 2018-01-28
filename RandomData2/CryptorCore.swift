@@ -20,6 +20,7 @@ public enum CryptorError: Error {
     case opened
     case notPrepared
     case SecItemBroken
+    case timeOut
     case CCCryptError(error: CCCryptorStatus)
     case SecItemError(error: OSStatus)
 }
@@ -44,6 +45,8 @@ extension CryptorError: LocalizedError {
             return "Prepare is not called"
         case .SecItemBroken:
             return "SecItem is broken"
+        case .timeOut:
+            return "Time Out to acquire a lock"
         case .CCCryptError(let error):
             return "CCCrypt Error(\(error))"
         case .SecItemError(let error):
@@ -69,7 +72,8 @@ extension CryptorError: Equatable {
              (.notOpened,        .notOpened),
              (.opened,           .opened),
              (.notPrepared,   .notPrepared),
-             (.SecItemBroken, .SecItemBroken):
+             (.SecItemBroken, .SecItemBroken),
+             (.timeOut, .timeOut):
             return true
         case (.CCCryptError(let error1), .CCCryptError(let error2)):
             return error1 == error2
@@ -194,7 +198,9 @@ internal class SecureStore {
     var dateCreated:  Date? { return self.query[kSecAttrCreationDate     as String] as? Date }
     var dateModified: Date? { return self.query[kSecAttrModificationDate as String] as? Date }
 
-    init() {
+    private var mutex: NSLock = NSLock()
+
+    private init() {
         self.query = [:]
     }
 
@@ -214,6 +220,9 @@ internal class SecureStore {
     }
 
     func read(label: String) throws -> Data? {
+        guard self.mutex.lock(before: Date(timeIntervalSinceNow: 30)) else {
+            throw CryptorError.timeOut
+        }
         self.prepare(label: label)
         self.query[ kSecReturnData       as String] = kCFBooleanTrue
         self.query[ kSecMatchLimit       as String] = kSecMatchLimitOne
@@ -224,6 +233,8 @@ internal class SecureStore {
         let status = withUnsafeMutablePointer(to: &result) {
             SecItemCopyMatching(self.query as CFDictionary, UnsafeMutablePointer($0))
         }
+        self.mutex.unlock()
+
         #if DEBUG
             print(String(reflecting: type(of: self)), "\(#function) SecItemCopyMatching = \(status)")
         #endif
@@ -247,9 +258,14 @@ internal class SecureStore {
     }
 
     func write(label: String, _ data: Data) throws {
+        guard self.mutex.lock(before: Date(timeIntervalSinceNow: 30)) else {
+            throw CryptorError.timeOut
+        }
         self.prepare(label: label)
         self.query[kSecValueData  as String] = data
         let status = SecItemAdd(self.query as CFDictionary, nil)
+        self.mutex.unlock()
+
         #if DEBUG
             print(String(reflecting: type(of: self)), "\(#function) SecItemAdd = \(status)")
         #endif
@@ -259,9 +275,14 @@ internal class SecureStore {
     }
 
     func update(label: String, _ data: Data) throws {
+        guard self.mutex.lock(before: Date(timeIntervalSinceNow: 30)) else {
+            throw CryptorError.timeOut
+        }
         self.prepare(label: label)
         let attr: [String: AnyObject] = [kSecValueData as String: data as AnyObject]
         let status = SecItemUpdate(self.query as CFDictionary, attr as CFDictionary)
+        self.mutex.unlock()
+
         #if DEBUG
             print(String(reflecting: type(of: self)), "\(#function) SecItemUpdate = \(status)")
         #endif
@@ -271,8 +292,13 @@ internal class SecureStore {
     }
 
     func delete(label: String) throws {
+        guard self.mutex.lock(before: Date(timeIntervalSinceNow: 30)) else {
+            throw CryptorError.timeOut
+        }
         self.prepare(label: label)
         let status = SecItemDelete(self.query as NSDictionary)
+        self.mutex.unlock()
+
         #if DEBUG
             print(String(reflecting: type(of: self)), "\(#function) SecItemDelete = \(status)")
         #endif
@@ -318,7 +344,7 @@ internal struct CryptorSeed {
 
     init?(_ str: String) {
         let ary = str.split(separator: ":")
-        guard ary.count == 3 else {
+        guard ary.count >= 3 else {
             return nil
         }
         let version = String(ary[0])
@@ -394,7 +420,7 @@ internal class Validator {
 
     init?(_ str: String) {
         let ary = str.split(separator: ":")
-        guard ary.count == 2 else {
+        guard ary.count >= 2 else {
             return nil
         }
         self.hashedMark     = Data(base64Encoded: String(ary[0]))
@@ -494,7 +520,7 @@ internal class Validator {
 // MARK: -
 internal class CryptorCore {
     // constants
-    static let MaxPasswordLength = 1000
+    public static let MAX_PASSWORD_LENGTH = 1000
 
     // instance variables
     private struct Session {
@@ -507,17 +533,18 @@ internal class CryptorCore {
         }
     }
     private var sessions: [Int: Session]
+    private var mutex: NSLock = NSLock()
 
     static var shared = CryptorCore()
 
-    init() {
+    private init() {
         self.sessions = [:]
     }
 
     // MARK: - methods
     private func getKEK(password: String, seed: CryptorSeed) throws -> CryptorKeyType {
         // check password
-        guard case 1...CryptorCore.MaxPasswordLength = password.count else {
+        guard case 1...CryptorCore.MAX_PASSWORD_LENGTH = password.count else {
             throw CryptorError.outOfRange
         }
 
@@ -539,6 +566,9 @@ internal class CryptorCore {
         // https://github.com/apportable/CommonCrypto/blob/master/include/CommonCrypto/CommonKeyDerivation.h
         // https://stackoverflow.com/questions/25691613/swift-how-to-call-cckeyderivationpbkdf-from-swift
         // https://stackoverflow.com/questions/35749197/how-to-use-common-crypto-and-or-calculate-sha256-in-swift-2-3
+        guard self.mutex.lock(before: Date(timeIntervalSinceNow: 30)) else {
+            throw CryptorError.timeOut
+        }
         status =
             salt.withUnsafeBytes { ptrSALT in
                 binPASS.withUnsafeBytes { ptrPASS in
@@ -552,6 +582,7 @@ internal class CryptorCore {
                     }
                 }
         }
+        self.mutex.unlock()
         #if DEBUG
             print(String(reflecting: type(of: self)), "\(#function) CCKeyDerivationPBKDF status=", status)
             print(String(reflecting: type(of: self)), "\(#function) KEK   =", kek as NSData)

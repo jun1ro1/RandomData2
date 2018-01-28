@@ -173,6 +173,48 @@ https://ja.wikipedia.org/wiki/歓喜の歌
     }
 
     // MARK: - Test Methods
+    func testCryptor_async() {
+        print("\n\(#function):\(#line)")
+        try? CryptorSeed.delete()
+        try? Validator.delete()
+
+        let password = "The quick brown fox jumps over the lazy white dog."
+        XCTAssertNoThrow( try Cryptor.prepare(password: password) )
+
+        var count = 0
+        let group = DispatchGroup()
+        let mutex = NSLock()
+        (0..<100).forEach { _ in
+            DispatchQueue.global().async(group: group) {
+                do {
+                    let cryptor = Cryptor()
+                    var r = ""
+                    XCTAssertNoThrow(
+                        r = try RandomData.shared.get(count: 1023, in: .AllCharactersSet)
+                    )
+                    XCTAssertNoThrow(
+                        try cryptor.open(password: password) {
+                            let plainText   = r
+                            let cipherText  = try! cryptor.encrypt(plain: plainText)
+                            let replainText = try! cryptor.decrypt(cipher: cipherText)
+                            print("----------")
+                            print("plainText   =", plainText)
+                            print("cipherText  =", cipherText)
+                            print("replainTExt =", replainText)
+                            XCTAssertEqual(plainText, replainText)
+                        }
+                    )
+                } catch {
+                    print("Exception throwed")
+                }
+                mutex.lock()
+                count += 1
+                mutex.unlock()
+            }
+        }
+        group.wait()
+        print("count = \(count)")
+    }
 
     func testCryptor_error() {
         print("\n\(#function):\(#line) delete SecItem")

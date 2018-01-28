@@ -38,12 +38,12 @@ public class Cryptor {
         self.key = nil
     }
     
-    func open(password: String, _ body:() -> Void ) throws {
+    func open(password: String, _ body:() throws -> Void ) throws {
         try self.open(password: password)
         defer {
             try? self.close()
         }
-        body()
+        try body()
     }
 
     func change(password oldpass: String, to newpass: String) throws {

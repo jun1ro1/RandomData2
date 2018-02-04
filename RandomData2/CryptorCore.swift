@@ -17,7 +17,7 @@ public enum CryptorError: Error {
     case invalidCharacter
     case wrongPassword
     case notOpened
-    case opened
+    case alreadyOpened
     case notPrepared
     case SecItemBroken
     case timeOut
@@ -39,8 +39,8 @@ extension CryptorError: LocalizedError {
             return "Wrong Password"
         case .notOpened:
             return "Cryptor is not Opened"
-        case .opened:
-            return "Cryptor is Opened"
+        case .alreadyOpened:
+            return "Cryptor is already Opened"
         case .notPrepared:
             return "Prepare is not called"
         case .SecItemBroken:
@@ -70,9 +70,9 @@ extension CryptorError: Equatable {
              (.invalidCharacter, .invalidCharacter),
              (.wrongPassword,    .wrongPassword),
              (.notOpened,        .notOpened),
-             (.opened,           .opened),
-             (.notPrepared,   .notPrepared),
-             (.SecItemBroken, .SecItemBroken),
+             (.alreadyOpened,    .alreadyOpened),
+             (.notPrepared,      .notPrepared),
+             (.SecItemBroken,    .SecItemBroken),
              (.timeOut, .timeOut):
             return true
         case (.CCCryptError(let error1), .CCCryptError(let error2)):
@@ -195,8 +195,8 @@ fileprivate extension String {
 // MARK: -
 internal class SecureStore {
     private var query: [String: Any]
-    var dateCreated:  Date? { return self.query[kSecAttrCreationDate     as String] as? Date }
-    var dateModified: Date? { return self.query[kSecAttrModificationDate as String] as? Date }
+    var dateCreated:  Date? = nil
+    var dateModified: Date? = nil
 
     private var mutex: NSLock = NSLock()
 
@@ -223,6 +223,8 @@ internal class SecureStore {
         guard self.mutex.lock(before: Date(timeIntervalSinceNow: 30)) else {
             throw CryptorError.timeOut
         }
+        defer { self.mutex.unlock() }
+
         self.prepare(label: label)
         self.query[ kSecReturnData       as String] = kCFBooleanTrue
         self.query[ kSecMatchLimit       as String] = kSecMatchLimitOne
@@ -233,11 +235,11 @@ internal class SecureStore {
         let status = withUnsafeMutablePointer(to: &result) {
             SecItemCopyMatching(self.query as CFDictionary, UnsafeMutablePointer($0))
         }
-        self.mutex.unlock()
 
         #if DEBUG
             print(String(reflecting: type(of: self)), "\(#function) SecItemCopyMatching = \(status)")
         #endif
+
         guard status != errSecItemNotFound else {
             return nil
         }
@@ -254,6 +256,10 @@ internal class SecureStore {
         #if DEBUG
             print(String(reflecting: type(of: self)), "\(#function) kSecValueData = ", data as NSData)
         #endif
+
+        self.dateCreated  = items[kSecAttrCreationDate     as String] as? Date
+        self.dateModified = items[kSecAttrModificationDate as String] as? Date
+
         return data
     }
 
@@ -518,27 +524,78 @@ internal class Validator {
 } // Validator
 
 // MARK: -
+private struct Session {
+    var cryptor: Cryptor
+    var itk:     CryptorKeyType  // Inter key: the KEK(Key kncryption Key) encrypted with SEK(Session Key)
+
+    init(cryptor: Cryptor, key: CryptorKeyType) {
+        self.cryptor = cryptor
+        self.itk  = key
+    }
+}
+
+fileprivate struct Sessions {
+    private var sessions: [Int: Session]
+    private var mutex = NSLock()
+
+    init() {
+        self.sessions = [:]
+    }
+
+    mutating func add(cryptor: Cryptor, session: Session) {
+        self.mutex.lock()
+        self.sessions[ObjectIdentifier(cryptor).hashValue] = session
+        self.mutex.unlock()
+    }
+
+    mutating func remove(cryptor: Cryptor) -> Bool {
+        self.mutex.lock()
+        let result = self.sessions.removeValue(forKey: ObjectIdentifier(cryptor).hashValue) != nil
+        self.mutex.unlock()
+        return result
+    }
+
+    func get(cryptor: Cryptor) -> Session? {
+        self.mutex.lock()
+        let result = self.sessions[ObjectIdentifier(cryptor).hashValue]
+        self.mutex.unlock()
+        return result
+    }
+
+    var first: Session? {
+        self.mutex.lock()
+        let result = self.sessions.first?.value
+        self.mutex.unlock()
+        return result
+    }
+
+    var isEmpty: Bool {
+        self.mutex.lock()
+        let result = self.sessions.isEmpty
+        self.mutex.unlock()
+        return result
+    }
+
+    var count: Int {
+        self.mutex.lock()
+        let result = self.sessions.count
+        self.mutex.unlock()
+        return result
+    }
+}
+
+// MARK: -
 internal class CryptorCore {
     // constants
     public static let MAX_PASSWORD_LENGTH = 1000
 
     // instance variables
-    private struct Session {
-        var cryptor: Cryptor
-        var binITK:  CryptorKeyType  // Inter key: the KEK(Key kncryption Key) encrypted with SEK(Session Key)
-
-        init(cryptor: Cryptor, key: CryptorKeyType) {
-            self.cryptor = cryptor
-            self.binITK  = key
-        }
-    }
-    private var sessions: [Int: Session]
+    private var sessions = Sessions()
     private var mutex: NSLock = NSLock()
 
     static var shared = CryptorCore()
 
     private init() {
-        self.sessions = [:]
     }
 
     // MARK: - methods
@@ -714,20 +771,32 @@ internal class CryptorCore {
         var binKEKEncryptedWithSEK: CryptorKeyType = try kek.encrypt(with: binSEK)
         defer { binKEKEncryptedWithSEK.reset() }
 
-        self.sessions[ObjectIdentifier(cryptor).hashValue] = Session(cryptor: cryptor, key: binKEKEncryptedWithSEK)
+        self.sessions.add(cryptor: cryptor, session: Session(cryptor: cryptor, key: binKEKEncryptedWithSEK))
         return binSEK
     }
 
 
     func close(cryptor: Cryptor) throws {
-        guard self.sessions.removeValue(forKey: ObjectIdentifier(cryptor).hashValue) != nil else {
+        guard self.sessions.remove(cryptor: cryptor) == true else {
             throw CryptorError.notOpened
         }
     }
 
     func closeAll() throws {
-        let cryptors = self.sessions.values
-        try cryptors.forEach { try self.close(cryptor: $0.cryptor) }
+        var errors = 0
+        while !self.sessions.isEmpty {
+            let before = self.sessions.count
+            guard let session = self.sessions.first else {
+                break
+            }
+            try self.close(cryptor: session.cryptor)
+            if before >= self.sessions.count {
+                errors += 1
+            }
+            guard errors < 100 else {
+                throw CryptorError.unexpected
+            }
+        }
     }
 
     func change(password oldpass: String, to newpass: String) throws {
@@ -793,8 +862,7 @@ internal class CryptorCore {
         guard let sek = cryptor.key else {
             throw CryptorError.notOpened
         }
-        var kek: CryptorKeyType =
-            (try self.sessions[ObjectIdentifier(cryptor).hashValue]?.binITK.decrypt(with: sek))!
+        var kek: CryptorKeyType = try (self.sessions.get(cryptor: cryptor)?.itk.decrypt(with: sek))!
         defer { kek.reset() }
 
         // get a seed
@@ -819,8 +887,7 @@ internal class CryptorCore {
         guard let sek = cryptor.key else {
             throw CryptorError.notOpened
         }
-        var kek: CryptorKeyType =
-            (try self.sessions[ObjectIdentifier(cryptor).hashValue]?.binITK.decrypt(with: sek))!
+        var kek: CryptorKeyType = try (self.sessions.get(cryptor: cryptor)?.itk.decrypt(with: sek))!
         defer { kek.reset() }
 
         // get a seed
@@ -845,8 +912,7 @@ internal class CryptorCore {
         guard let sek = cryptor.key else {
             throw CryptorError.notOpened
         }
-        var kek: CryptorKeyType =
-            (try self.sessions[ObjectIdentifier(cryptor).hashValue]?.binITK.decrypt(with: sek))!
+        var kek: CryptorKeyType = try (self.sessions.get(cryptor: cryptor)?.itk.decrypt(with: sek))!
         defer { kek.reset() }
 
         // get a seed
@@ -871,8 +937,7 @@ internal class CryptorCore {
         guard let sek = cryptor.key else {
             throw CryptorError.notOpened
         }
-        var kek: CryptorKeyType =
-            (try self.sessions[ObjectIdentifier(cryptor).hashValue]?.binITK.decrypt(with: sek))!
+        var kek: CryptorKeyType = try (self.sessions.get(cryptor: cryptor)?.itk.decrypt(with: sek))!
         defer { kek.reset() }
 
         // get a seed

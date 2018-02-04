@@ -48,35 +48,35 @@ public class Cryptor {
 
     func change(password oldpass: String, to newpass: String) throws {
         guard self.key == nil else {
-            throw CryptorError.opened
+            throw CryptorError.alreadyOpened
         }
         return try Cryptor.core.change(password: oldpass, to: newpass)
     }
     
     func encrypt(plain: Data) throws -> Data {
         guard self.key != nil else {
-            throw CryptorError.opened
+            throw CryptorError.alreadyOpened
         }
         return try Cryptor.core.encrypt(cryptor: self, plain: plain)
     }
 
     func decrypt(cipher: Data) throws -> Data {
         guard self.key != nil else {
-            throw CryptorError.opened
+            throw CryptorError.alreadyOpened
         }
         return try Cryptor.core.decrypt(cryptor: self, cipher: cipher)
     }
 
     func encrypt(plain: String) throws -> String {
         guard self.key != nil else {
-            throw CryptorError.opened
+            throw CryptorError.alreadyOpened
         }
         return try Cryptor.core.encrypt(cryptor: self, plain: plain)
     }
 
     func decrypt(cipher: String) throws -> String {
         guard self.key != nil else {
-            throw CryptorError.opened
+            throw CryptorError.alreadyOpened
         }
         return try Cryptor.core.decrypt(cryptor: self, cipher: cipher)
     }

@@ -184,23 +184,23 @@ https://ja.wikipedia.org/wiki/歓喜の歌
         var count = 0
         let group = DispatchGroup()
         let mutex = NSLock()
-        (0..<100).forEach { _ in
+        (0..<10000).forEach { _ in
             DispatchQueue.global().async(group: group) {
                 do {
                     let cryptor = Cryptor()
                     var r = ""
                     XCTAssertNoThrow(
-                        r = try RandomData.shared.get(count: 1023, in: .AllCharactersSet)
+                        try r = RandomData.shared.get(count: 1023, in: .AllCharactersSet)
                     )
                     XCTAssertNoThrow(
                         try cryptor.open(password: password) {
                             let plainText   = r
                             let cipherText  = try! cryptor.encrypt(plain: plainText)
                             let replainText = try! cryptor.decrypt(cipher: cipherText)
-                            print("----------")
-                            print("plainText   =", plainText)
-                            print("cipherText  =", cipherText)
-                            print("replainTExt =", replainText)
+//                            print("----------")
+//                            print("plainText   =", plainText)
+//                            print("cipherText  =", cipherText)
+//                            print("replainTExt =", replainText)
                             XCTAssertEqual(plainText, replainText)
                         }
                     )

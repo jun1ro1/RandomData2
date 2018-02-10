@@ -176,7 +176,9 @@ https://ja.wikipedia.org/wiki/歓喜の歌
     func testCryptor_async() {
         print("\n\(#function):\(#line)")
         try? CryptorSeed.delete()
+        print("\n\(#function):\(#line)")
         try? Validator.delete()
+        print("\n\(#function):\(#line)")
 
         let password = "The quick brown fox jumps over the lazy white dog."
         XCTAssertNoThrow( try Cryptor.prepare(password: password) )
@@ -188,27 +190,25 @@ https://ja.wikipedia.org/wiki/歓喜の歌
             DispatchQueue.global().async(group: group) {
                 do {
                     let cryptor = Cryptor()
-                    var r = ""
+                    var r: String = ""
                     XCTAssertNoThrow(
-                        try r = RandomData.shared.get(count: 1023, in: .AllCharactersSet)
+                        r = try RandomData.shared.get(count: 1023, in: .AllCharactersSet)
                     )
                     XCTAssertNoThrow(
                         try cryptor.open(password: password) {
                             let plainText   = r
                             let cipherText  = try! cryptor.encrypt(plain: plainText)
                             let replainText = try! cryptor.decrypt(cipher: cipherText)
-//                            print("----------")
-//                            print("plainText   =", plainText)
-//                            print("cipherText  =", cipherText)
-//                            print("replainTExt =", replainText)
                             XCTAssertEqual(plainText, replainText)
                         }
                     )
-                } catch {
+                }
+                catch {
                     print("Exception throwed")
                 }
                 mutex.lock()
                 count += 1
+                print("count = \(count)")
                 mutex.unlock()
             }
         }

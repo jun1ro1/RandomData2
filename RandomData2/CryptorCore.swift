@@ -847,7 +847,14 @@ internal class CryptorCore {
         let session = self.sessions[ObjectIdentifier(cryptor).hashValue]
         self.mutex.unlock()
 
-        var kek: CryptorKeyType = try (session?.itk.decrypt(with: sek))!
+        #if DEBUG
+            print(String(reflecting: type(of: self)), "\(#function) session.itk = ", (session?.itk as NSData?) ?? "nil")
+        #endif
+        guard let itk = session?.itk else {
+            throw CryptorError.notOpened
+        }
+
+        var kek = try itk.decrypt(with: sek)
         defer { kek.reset() }
 
         // get a seed
@@ -876,7 +883,14 @@ internal class CryptorCore {
         let session = self.sessions[ObjectIdentifier(cryptor).hashValue]
         self.mutex.unlock()
 
-        var kek: CryptorKeyType = try (session?.itk.decrypt(with: sek))!
+        #if DEBUG
+            print(String(reflecting: type(of: self)), "\(#function) session.itk = ", (session?.itk as NSData?) ?? "nil")
+        #endif
+        guard let itk = session?.itk else {
+            throw CryptorError.notOpened
+        }
+
+        var kek = try itk.decrypt(with: sek)
         defer { kek.reset() }
 
         // get a seed
@@ -905,7 +919,14 @@ internal class CryptorCore {
         let session = self.sessions[ObjectIdentifier(cryptor).hashValue]
         self.mutex.unlock()
 
-        var kek: CryptorKeyType = try (session?.itk.decrypt(with: sek))!
+        #if DEBUG
+            print(String(reflecting: type(of: self)), "\(#function) session.itk = ", (session?.itk as NSData?) ?? "nil")
+        #endif
+        guard let itk = session?.itk else {
+            throw CryptorError.notOpened
+        }
+
+        var kek = try itk.decrypt(with: sek)
         defer { kek.reset() }
 
         // get a seed
@@ -930,11 +951,19 @@ internal class CryptorCore {
         guard let sek = cryptor.key else {
             throw CryptorError.notOpened
         }
+
         self.mutex.lock()
         let session = self.sessions[ObjectIdentifier(cryptor).hashValue]
         self.mutex.unlock()
 
-        var kek: CryptorKeyType = try (session?.itk.decrypt(with: sek))!
+        #if DEBUG
+            print(String(reflecting: type(of: self)), "\(#function) session.itk = ", (session?.itk as NSData?) ?? "nil")
+        #endif
+        guard let itk = session?.itk else {
+            throw CryptorError.notOpened
+        }
+
+        var kek = try itk.decrypt(with: sek)
         defer { kek.reset() }
 
         // get a seed

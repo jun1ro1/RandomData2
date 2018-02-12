@@ -7,6 +7,7 @@
 //
 
 import XCTest
+import Foundation
 @testable import RandomData2
 
 class RandomData2Tests: XCTestCase {
@@ -173,12 +174,56 @@ https://ja.wikipedia.org/wiki/歓喜の歌
     }
 
     // MARK: - Test Methods
+    func testCryptor_async_closeAll() {
+        print("\n\(#function):\(#line)")
+        try? CryptorSeed.delete()
+        try? Validator.delete()
+
+        let password = "The quick brown fox jumps over the lazy white dog."
+        XCTAssertNoThrow( try Cryptor.prepare(password: password) )
+
+        var count = 0
+        let group = DispatchGroup()
+        let mutex = NSLock()
+        let count_max = 64
+        (0..<count_max).forEach { _ in
+            DispatchQueue.global().async(group: group) {
+                mutex.lock()
+                count += 1
+                print("count = \(count)")
+                mutex.unlock()
+
+                let cryptor = Cryptor()
+                while true {
+                    do {
+                        let plainText = try RandomData.shared.get(count: 1023, in: .AllCharactersSet)
+                        try cryptor.open(password: password) {
+                            let cipherText  = try cryptor.encrypt(plain: plainText)
+                            Thread.sleep(forTimeInterval: 3.0)
+                            let replainText = try cryptor.decrypt(cipher: cipherText)
+                            XCTAssertEqual(plainText, replainText)
+                        }
+                    }
+                    catch {
+                        print("count=\(count) exception=\(error)")
+                    }
+                }
+            }
+        }
+        var c = 0
+        while c < count_max {
+            mutex.lock()
+            c = count
+            mutex.unlock()
+            Thread.sleep(forTimeInterval: 10.0)
+        }
+        XCTAssertNoThrow( try CryptorCore.shared.closeAll() )
+    }
+
     func testCryptor_async() {
         print("\n\(#function):\(#line)")
         try? CryptorSeed.delete()
-        print("\n\(#function):\(#line)")
         try? Validator.delete()
-        print("\n\(#function):\(#line)")
 
         let password = "The quick brown fox jumps over the lazy white dog."
         XCTAssertNoThrow( try Cryptor.prepare(password: password) )
@@ -197,8 +242,8 @@ https://ja.wikipedia.org/wiki/歓喜の歌
                     XCTAssertNoThrow(
                         try cryptor.open(password: password) {
                             let plainText   = r
-                            let cipherText  = try! cryptor.encrypt(plain: plainText)
-                            let replainText = try! cryptor.decrypt(cipher: cipherText)
+                            let cipherText  = try cryptor.encrypt(plain: plainText)
+                            let replainText = try cryptor.decrypt(cipher: cipherText)
                             XCTAssertEqual(plainText, replainText)
                         }
                     )

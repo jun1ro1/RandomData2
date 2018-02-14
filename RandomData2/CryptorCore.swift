@@ -848,7 +848,7 @@ internal class CryptorCore {
         self.mutex.unlock()
 
         #if DEBUG
-            print(String(reflecting: type(of: self)), "\(#function) session.itk = ", (session?.itk as NSData?) ?? "nil")
+            print("thread=\(Thread.current)", String(reflecting: type(of: self)), "\(#function) session.itk = ", (session?.itk as NSData?) ?? "nil")
         #endif
         guard let itk = session?.itk else {
             throw CryptorError.notOpened
@@ -884,7 +884,7 @@ internal class CryptorCore {
         self.mutex.unlock()
 
         #if DEBUG
-            print(String(reflecting: type(of: self)), "\(#function) session.itk = ", (session?.itk as NSData?) ?? "nil")
+            print("thread=\(Thread.current)", String(reflecting: type(of: self)), "\(#function) session.itk = ", (session?.itk as NSData?) ?? "nil")
         #endif
         guard let itk = session?.itk else {
             throw CryptorError.notOpened
@@ -920,7 +920,7 @@ internal class CryptorCore {
         self.mutex.unlock()
 
         #if DEBUG
-            print(String(reflecting: type(of: self)), "\(#function) session.itk = ", (session?.itk as NSData?) ?? "nil")
+            print("thread=\(Thread.current)", String(reflecting: type(of: self)), "\(#function) session.itk = ", (session?.itk as NSData?) ?? "nil")
         #endif
         guard let itk = session?.itk else {
             throw CryptorError.notOpened
@@ -957,7 +957,7 @@ internal class CryptorCore {
         self.mutex.unlock()
 
         #if DEBUG
-            print(String(reflecting: type(of: self)), "\(#function) session.itk = ", (session?.itk as NSData?) ?? "nil")
+            print("thread=\(Thread.current)", String(reflecting: type(of: self)), "\(#function) session.itk = ", (session?.itk as NSData?) ?? "nil")
         #endif
         guard let itk = session?.itk else {
             throw CryptorError.notOpened

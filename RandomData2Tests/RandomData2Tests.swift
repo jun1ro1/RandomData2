@@ -185,38 +185,56 @@ https://ja.wikipedia.org/wiki/歓喜の歌
         var count = 0
         let group = DispatchGroup()
         let mutex = NSLock()
-        let count_max = 64
+        let count_max = 23
         (0..<count_max).forEach { _ in
-            DispatchQueue.global().async(group: group) {
+            Thread.sleep(forTimeInterval: 0.1)
+            DispatchQueue.global().async(group: group, qos: .background) {
                 mutex.lock()
                 count += 1
-                print("count = \(count)")
+                let c = count
                 mutex.unlock()
 
+                Thread.current.name = "TH" + String(c)
+                print("thread=\(Thread.current.name!) count=\(c)")
+
+                let sleep = (c % 2 == 0) ? 2.0 : 3.0
                 let cryptor = Cryptor()
                 while true {
                     do {
                         let plainText = try RandomData.shared.get(count: 1023, in: .AllCharactersSet)
                         try cryptor.open(password: password) {
+                            Thread.sleep(forTimeInterval: sleep)
                             let cipherText  = try cryptor.encrypt(plain: plainText)
-                            Thread.sleep(forTimeInterval: 3.0)
+                            Thread.sleep(forTimeInterval: sleep)
                             let replainText = try cryptor.decrypt(cipher: cipherText)
                             XCTAssertEqual(plainText, replainText)
+                            Thread.sleep(forTimeInterval: sleep)
                         }
                     }
-                    catch {
-                        print("count=\(count) exception=\(error)")
+                    catch CryptorError.notOpened {
+                        print("thread=\(Thread.current.name!) count=\(c) notOpend")
+                        break
+                    }
+                    catch CryptorError.timeOut {
+                        print("thread=\(Thread.current.name!) count=\(c) timeOut")
+                        break
+                    }
+                    catch let error {
+                        XCTFail("thread=\(Thread.current.name!) count=\(c) exception=\(error)")
+                        break
                     }
                 }
             }
         }
         var c = 0
         while c < count_max {
+            Thread.sleep(forTimeInterval: 5.0)
             mutex.lock()
             c = count
             mutex.unlock()
-            Thread.sleep(forTimeInterval: 10.0)
+            print("process count = \(c)")
         }
+        print("*** CLOSE ALL ***")
         XCTAssertNoThrow( try CryptorCore.shared.closeAll() )
     }
 
@@ -228,10 +246,11 @@ https://ja.wikipedia.org/wiki/歓喜の歌
         let password = "The quick brown fox jumps over the lazy white dog."
         XCTAssertNoThrow( try Cryptor.prepare(password: password) )
 
+        let count_max = 10000
         var count = 0
         let group = DispatchGroup()
         let mutex = NSLock()
-        (0..<10000).forEach { _ in
+        (0..<count_max).forEach { (c) in
             DispatchQueue.global().async(group: group) {
                 do {
                     let cryptor = Cryptor()
@@ -247,9 +266,13 @@ https://ja.wikipedia.org/wiki/歓喜の歌
                             XCTAssertEqual(plainText, replainText)
                         }
                     )
+                    // dummy code to depress a warning
+                    if c > count_max {
+                        throw CryptorError.unexpected
+                    }
                 }
-                catch {
-                    print("Exception throwed")
+                catch let error {
+                    print("exception = \(error)")
                 }
                 mutex.lock()
                 count += 1

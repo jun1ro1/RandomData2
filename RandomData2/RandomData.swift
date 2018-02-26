@@ -370,9 +370,12 @@ public class RandomData {
             // RandomData.get generates count bytes random data
             // calculate the enough size of random data
 
-            let rand = try self.get(count: indexCount)
+            #if DEBUG_ERROR_ZERO
+                let rand = Data(count: indexCount) // return a zero data when DEBUG
+            #else
+                let rand = try self.get(count: indexCount)
+            #endif
 
-            // let rand = Data(count: indexCount) // when DEBUG
             let indecies = rand.als(radix: UInt8(charCount))
 
             let str = String( indecies.map { charArray[Int($0)] } )

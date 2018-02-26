@@ -183,9 +183,10 @@ https://ja.wikipedia.org/wiki/歓喜の歌
         XCTAssertNoThrow( try Cryptor.prepare(password: password) )
 
         var count = 0
+        var stop  = false
         let group = DispatchGroup()
         let mutex = NSLock()
-        let count_max = 23
+        let count_max = 64
         (0..<count_max).forEach { _ in
             Thread.sleep(forTimeInterval: 0.1)
             DispatchQueue.global().async(group: group, qos: .background) {
@@ -194,19 +195,51 @@ https://ja.wikipedia.org/wiki/歓喜の歌
                 let c = count
                 mutex.unlock()
 
-                Thread.current.name = "TH" + String(c)
+                Thread.current.name = "THRD" + String(format:"%02d", c)
                 print("thread=\(Thread.current.name!) count=\(c)")
 
                 let sleep = (c % 2 == 0) ? 2.0 : 3.0
                 let cryptor = Cryptor()
-                while true {
+                var cont    = true
+                while cont {
                     do {
-                        let plainText = try RandomData.shared.get(count: 1023, in: .AllCharactersSet)
+                        var plainText   = ""
+                        var cipherText  = ""
+                        var replainText = ""
+                        do {
+                            plainText = try RandomData.shared.get(count: 1023, in: .AllCharactersSet)
+                        }
+                        catch let error {
+                            XCTFail("thread=\(Thread.current.name!) count=\(c) exception=\(error)")
+                            break
+                        }
                         try cryptor.open(password: password) {
                             Thread.sleep(forTimeInterval: sleep)
-                            let cipherText  = try cryptor.encrypt(plain: plainText)
+                            do {
+                                cipherText  = try cryptor.encrypt(plain: plainText)
+                            }
+                            catch CryptorError.notOpened {
+                                print("thread=\(Thread.current.name!) count=\(c) notOpend")
+                                return
+                            }
+                            catch let error {
+                                XCTFail("thread=\(Thread.current.name!) count=\(c) exception=\(error)")
+                                return
+                            }
+
                             Thread.sleep(forTimeInterval: sleep)
-                            let replainText = try cryptor.decrypt(cipher: cipherText)
+                            do {
+                                replainText = try cryptor.decrypt(cipher: cipherText)
+                            }
+                            catch CryptorError.notOpened {
+                                print("thread=\(Thread.current.name!) count=\(c) notOpend")
+                                return
+                            }
+                            catch let error {
+                                XCTFail("thread=\(Thread.current.name!) count=\(c) exception=\(error)")
+                                return
+                            }
+
                             XCTAssertEqual(plainText, replainText)
                             Thread.sleep(forTimeInterval: sleep)
                         }
@@ -215,15 +248,15 @@ https://ja.wikipedia.org/wiki/歓喜の歌
                         print("thread=\(Thread.current.name!) count=\(c) notOpend")
                         break
                     }
-                    catch CryptorError.timeOut {
-                        print("thread=\(Thread.current.name!) count=\(c) timeOut")
-                        break
-                    }
                     catch let error {
                         XCTFail("thread=\(Thread.current.name!) count=\(c) exception=\(error)")
                         break
                     }
+                    mutex.lock()
+                    cont = !stop
+                    mutex.unlock()
                 }
+                print("thread=\(Thread.current.name!) END")
             }
         }
         var c = 0
@@ -232,10 +265,14 @@ https://ja.wikipedia.org/wiki/歓喜の歌
             mutex.lock()
             c = count
             mutex.unlock()
-            print("process count = \(c)")
+            print("thread count = \(c)")
         }
         print("*** CLOSE ALL ***")
+        mutex.lock()
+        stop = true
+        mutex.unlock()
         XCTAssertNoThrow( try CryptorCore.shared.closeAll() )
+        group.wait()
     }
 
     func testCryptor_async() {

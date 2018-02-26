@@ -109,7 +109,8 @@ fileprivate extension Data {
                 }
         }
         #if DEBUG
-            print(String(reflecting: type(of: self)), "\(#function) CCCrypt(Encrypt) status=", status)
+            print("thread=\(Thread.current)", String(reflecting: type(of: self)),
+                "\(#function) CCCrypt(Encrypt) status=", status)
         #endif
         if status == kCCSuccess {
             cipher.removeSubrange(dataOutMoved..<cipher.count)
@@ -140,7 +141,8 @@ fileprivate extension Data {
                 }
         }
         #if DEBUG
-            print(String(reflecting: type(of: self)), "\(#function) CCCrypt(Decrypt) status=", status)
+            print("thread=\(Thread.current)", String(reflecting: type(of: self)),
+                  "\(#function) CCCrypt(Decrypt) status=", status)
         #endif
         if status == kCCSuccess {
             plain.removeSubrange(dataOutMoved..<plain.count)
@@ -238,7 +240,8 @@ internal class SecureStore {
         }
 
         #if DEBUG
-            print(String(reflecting: type(of: self)), "\(#function) SecItemCopyMatching = \(status)")
+            print("thread=\(Thread.current)", String(reflecting: type(of: self)),
+                  "\(#function) SecItemCopyMatching = \(status)")
         #endif
 
         guard status != errSecItemNotFound else {
@@ -255,7 +258,8 @@ internal class SecureStore {
         }
 
         #if DEBUG
-            print(String(reflecting: type(of: self)), "\(#function) kSecValueData = ", data as NSData)
+            print("thread=\(Thread.current)", String(reflecting: type(of: self)),
+                  "\(#function) kSecValueData = ", data as NSData)
         #endif
 
         self.dateCreated  = items[kSecAttrCreationDate     as String] as? Date
@@ -274,7 +278,8 @@ internal class SecureStore {
         self.mutex.unlock()
 
         #if DEBUG
-            print(String(reflecting: type(of: self)), "\(#function) SecItemAdd = \(status)")
+            print("thread=\(Thread.current)", String(reflecting: type(of: self)),
+                  "\(#function) SecItemAdd = \(status)")
         #endif
         guard status == noErr else {
             throw CryptorError.SecItemError(error: status)
@@ -291,7 +296,8 @@ internal class SecureStore {
         self.mutex.unlock()
 
         #if DEBUG
-            print(String(reflecting: type(of: self)), "\(#function) SecItemUpdate = \(status)")
+            print("thread=\(Thread.current)", String(reflecting: type(of: self)),
+                  "\(#function) SecItemUpdate = \(status)")
         #endif
         guard status == noErr else {
             throw CryptorError.SecItemError(error: status)
@@ -307,7 +313,8 @@ internal class SecureStore {
         self.mutex.unlock()
 
         #if DEBUG
-            print(String(reflecting: type(of: self)), "\(#function) SecItemDelete = \(status)")
+            print("thread=\(Thread.current)", String(reflecting: type(of: self)),
+                  "\(#function) SecItemDelete = \(status)")
         #endif
         guard status == noErr || status == errSecItemNotFound else {
             throw CryptorError.SecItemError(error: status)
@@ -456,8 +463,10 @@ internal class Validator {
         self.hashedMark = mark.hash()
 
         #if DEBUG
-            print(String(reflecting: type(of: self)), "\(#function) mark   =", mark as NSData)
-            print(String(reflecting: type(of: self)), "\(#function) hshMark=", self.hashedMark! as NSData)
+            print("thread=\(Thread.current)", String(reflecting: type(of: self)),
+                  "\(#function) mark   =", mark as NSData)
+            print("thread=\(Thread.current)", String(reflecting: type(of: self)),
+                  "\(#function) hshMark=", self.hashedMark! as NSData)
         #endif
 
         self.encryptedMark = try? mark.encrypt(with: key)
@@ -466,7 +475,8 @@ internal class Validator {
         }
 
         #if DEBUG
-            print(String(reflecting: type(of: self)), "\(#function) encryptedMark=", self.encryptedMark! as NSData)
+            print("thread=\(Thread.current)", String(reflecting: type(of: self)),
+                  "\(#function) encryptedMark=", self.encryptedMark! as NSData)
         #endif
     }
 
@@ -496,8 +506,10 @@ internal class Validator {
             defer { hashedDecryptedMark.reset() }
 
             #if DEBUG
-                print(String(reflecting: type(of: self)), "\(#function) hashedMark          =", hashedMark! as NSData)
-                print(String(reflecting: type(of: self)), "\(#function) hashedDecryptedMark =", hashedDecryptedMark as NSData)
+                print("thread=\(Thread.current)", String(reflecting: type(of: self)),
+                      "\(#function) hashedMark          =", hashedMark! as NSData)
+                print("thread=\(Thread.current)", String(reflecting: type(of: self)),
+                      "\(#function) hashedDecryptedMark =", hashedDecryptedMark as NSData)
             #endif
 
             return hashedMark == hashedDecryptedMark
@@ -542,9 +554,9 @@ private struct Session {
     var itk:     CryptorKeyType
     // Inter key: the KEK(Key kncryption Key) encrypted with SEK(Session Key)
 
-    init(cryptor: Cryptor, key: CryptorKeyType) {
+    init(cryptor: Cryptor, itk: CryptorKeyType) {
         self.cryptor = cryptor
-        self.itk  = key
+        self.itk  = itk
     }
 }
 
@@ -559,6 +571,11 @@ internal class CryptorCore {
     private var mutex: NSLock = NSLock()
 
     static var shared = CryptorCore()
+
+    static var isPrepared: Bool {
+        return (try? CryptorSeed.read()) != nil
+    }
+
 
     private init() {
     }
@@ -606,8 +623,10 @@ internal class CryptorCore {
         }
         self.mutex.unlock()
         #if DEBUG
-            print(String(reflecting: type(of: self)), "\(#function) CCKeyDerivationPBKDF status=", status)
-            print(String(reflecting: type(of: self)), "\(#function) KEK   =", kek as NSData)
+            print("thread=\(Thread.current)", String(reflecting: type(of: self)),
+                  "\(#function) CCKeyDerivationPBKDF status=", status)
+            print("thread=\(Thread.current)", String(reflecting: type(of: self)),
+                  "\(#function) KEK   =", kek as NSData)
         #endif
         guard status == CCCryptorStatus(kCCSuccess) else {
             throw CryptorError.CCCryptError(error: status)
@@ -677,10 +696,14 @@ internal class CryptorCore {
             try Validator.write(validator)
 
             #if DEBUG
-                print(String(reflecting: type(of: self)), "\(#function) salt  =", salt as NSData)
-                print(String(reflecting: type(of: self)), "\(#function) kek   =", kek as NSData)
-                print(String(reflecting: type(of: self)), "\(#function) cek   =", cek as NSData)
-                print(String(reflecting: type(of: self)), "\(#function) cekEnc=", cekEnc as NSData)
+                print("thread=\(Thread.current)", String(reflecting: type(of: self)),
+                      "\(#function) salt  =", salt as NSData)
+                print("thread=\(Thread.current)", String(reflecting: type(of: self)),
+                      "\(#function) kek   =", kek as NSData)
+                print("thread=\(Thread.current)", String(reflecting: type(of: self)),
+                      "\(#function) cek   =", cek as NSData)
+                print("thread=\(Thread.current)", String(reflecting: type(of: self)),
+                      "\(#function) cekEnc=", cekEnc as NSData)
             #endif
         }
     }
@@ -719,29 +742,31 @@ internal class CryptorCore {
         }
 
         #if DEBUG
-            print(String(reflecting: type(of: self)), "\(#function) cek   =", cek as NSData)
+            print("thread=\(Thread.current)", String(reflecting: type(of: self)),
+                  "\(#function) cek   =", cek as NSData)
         #endif
 
         // check CEK
         guard validator.validate(key: cek) == true else {
             #if DEBUG
-                print(String(reflecting: type(of: self)), "\(#function) validate= false")
+                print("thread=\(Thread.current)", String(reflecting: type(of: self)),
+                      "\(#function) validate= false")
             #endif
             throw CryptorError.wrongPassword
         }
 
-        var binSEK: CryptorKeyType = try RandomData.shared.get(count: kCCKeySizeAES256)
-        defer { binSEK.reset() }
+        var sek: CryptorKeyType = try RandomData.shared.get(count: kCCKeySizeAES256)
+        defer { sek.reset() }
 
-        var binKEKEncryptedWithSEK: CryptorKeyType = try kek.encrypt(with: binSEK)
-        defer { binKEKEncryptedWithSEK.reset() }
+        var itk: CryptorKeyType = try kek.encrypt(with: sek)
+        defer { itk.reset() }
 
-        let session = Session(cryptor: cryptor, key: binKEKEncryptedWithSEK)
+        let session = Session(cryptor: cryptor, itk: itk)
         self.mutex.lock()
         self.sessions[ObjectIdentifier(cryptor).hashValue] = session
         self.mutex.unlock()
 
-        return binSEK
+        return sek
     }
 
 
@@ -815,7 +840,8 @@ internal class CryptorCore {
         // check CEK
         guard validator.validate(key: cek) == true else {
             #if DEBUG
-                print(String(reflecting: type(of: self)), "\(#function) validate= false")
+                print("thread=\(Thread.current)", String(reflecting: type(of: self)),
+                      "\(#function) validate= false")
             #endif
             throw CryptorError.wrongPassword
         }
@@ -833,9 +859,12 @@ internal class CryptorCore {
         try CryptorSeed.update(seed)
 
         #if DEBUG
-            print(String(reflecting: type(of: self)), "\(#function) newkek    =", newkek as NSData)
-            print(String(reflecting: type(of: self)), "\(#function) cek       =", cek as NSData)
-            print(String(reflecting: type(of: self)), "\(#function) newkekEnc =", newcekEnc as NSData)
+            print("thread=\(Thread.current)", String(reflecting: type(of: self)),
+                  "\(#function) newkek    =", newkek as NSData)
+            print("thread=\(Thread.current)", String(reflecting: type(of: self)),
+                  "\(#function) cek       =", cek as NSData)
+            print("thread=\(Thread.current)", String(reflecting: type(of: self)),
+                  "\(#function) newkekEnc =", newcekEnc as NSData)
         #endif
     }
 
@@ -848,11 +877,13 @@ internal class CryptorCore {
         self.mutex.unlock()
 
         #if DEBUG
-            print("thread=\(Thread.current)", String(reflecting: type(of: self)), "\(#function) session.itk = ", (session?.itk as NSData?) ?? "nil")
+            print("thread=\(Thread.current)", String(reflecting: type(of: self)),
+                  "\(#function) session.itk = ", (session?.itk as NSData?) ?? "nil")
         #endif
-        guard let itk = session?.itk else {
+        guard var itk = session?.itk else {
             throw CryptorError.notOpened
         }
+        defer { itk.reset() }
 
         var kek = try itk.decrypt(with: sek)
         defer { kek.reset() }
@@ -884,11 +915,13 @@ internal class CryptorCore {
         self.mutex.unlock()
 
         #if DEBUG
-            print("thread=\(Thread.current)", String(reflecting: type(of: self)), "\(#function) session.itk = ", (session?.itk as NSData?) ?? "nil")
+            print("thread=\(Thread.current)", String(reflecting: type(of: self)),
+                  "\(#function) session.itk = ", (session?.itk as NSData?) ?? "nil")
         #endif
-        guard let itk = session?.itk else {
+        guard var itk = session?.itk else {
             throw CryptorError.notOpened
         }
+        defer { itk.reset() }
 
         var kek = try itk.decrypt(with: sek)
         defer { kek.reset() }
@@ -920,11 +953,13 @@ internal class CryptorCore {
         self.mutex.unlock()
 
         #if DEBUG
-            print("thread=\(Thread.current)", String(reflecting: type(of: self)), "\(#function) session.itk = ", (session?.itk as NSData?) ?? "nil")
+            print("thread=\(Thread.current)", String(reflecting: type(of: self)),
+                  "\(#function) session.itk = ", (session?.itk as NSData?) ?? "nil")
         #endif
-        guard let itk = session?.itk else {
+        guard var itk = session?.itk else {
             throw CryptorError.notOpened
         }
+        defer { itk.reset() }
 
         var kek = try itk.decrypt(with: sek)
         defer { kek.reset() }
@@ -957,11 +992,13 @@ internal class CryptorCore {
         self.mutex.unlock()
 
         #if DEBUG
-            print("thread=\(Thread.current)", String(reflecting: type(of: self)), "\(#function) session.itk = ", (session?.itk as NSData?) ?? "nil")
+            print("thread=\(Thread.current)", String(reflecting: type(of: self)),
+                  "\(#function) session.itk = ", (session?.itk as NSData?) ?? "nil")
         #endif
-        guard let itk = session?.itk else {
+        guard var itk = session?.itk else {
             throw CryptorError.notOpened
         }
+        defer { itk.reset() }
 
         var kek = try itk.decrypt(with: sek)
         defer { kek.reset() }
